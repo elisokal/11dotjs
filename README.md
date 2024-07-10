@@ -1,5 +1,5 @@
 # 11dotjs is HTML5 without HTML
-11dotjs (pronounced like "eleven.js") is an open-source TypeScript / JavaScript project. It’s **not** a framework, or API, and it’s **not** opinionated. 11dotjs **is** independent of all other web-authoring frameworks, so you can use it with or without any of them. Its only dependency is your browser. 
+11dotjs (pronounced like "eleven.js") is an open-source TypeScript / JavaScript project. It’s **not** a framework, or API, and it’s **not** opinionated. 11dotjs **is** independent of all other web-authoring frameworks, so you can use it with or without any of them. Its only dependency is the TypeScript compiler and your browser.
 ## Goals
 - Share free, lightweight, ready-to-use web components with the masses. 
 - Promote a web-authoring model based on JSON instead of HTML.
