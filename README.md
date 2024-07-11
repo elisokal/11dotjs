@@ -4,7 +4,11 @@
 - Share free, lightweight, ready-to-use web components with the masses. 
 - Promote a web-authoring model based on Objects instead of HTML.
 ## Turn your code up to eleven with 11dotjs.
-With the **11dotjs** web-authoring model, you code the UI in intuitive JSON, then invoke the **11dotjs Composer** to convert the JSON directly to the browser’s DOM document. 
+With the **11dotjs** web-authoring model, you can 
+- Code your UI in intuitive JSON.
+- Call **11dotjs** generators to add structures like tables to your graph.
+- Write your own generators.
+- Invoke the **11dotjs Composer** to convert your UI object graph directly to the browser’s DOM document.
 ## See a Demo
 Intuitive Color Palette, the first **11dotjs** component, contains neither static nor generated HTML. There’s a demo at http://elisokal.com/11dotjs/colorPaletteDemo2.html. 
 ## Learn More
