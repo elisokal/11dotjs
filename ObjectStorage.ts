@@ -1,4 +1,14 @@
-class ObjectStore {
+class ObjectStorageConfig {
+    accept: string;
+    multiple: boolean;
+}
+
+class ObjectStorage {
+
+    constructor( config: ObjectStorageConfig ) {
+
+    }
+
 	private createUi( parent: Node ) {
 		let ui = {
             "input" : {
@@ -20,4 +30,4 @@ class ObjectStore {
     }
 }
 
-var objectStore = new ObjectStore();
+var objectStorage = new ObjectStorage( null );

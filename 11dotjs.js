@@ -678,7 +678,7 @@ Rgb.mColor = ~Rgb.mAlpha;
 // This class created by Eli Sokal
 //
 // DocComposer converts a JavaScript object graph to a browser document, 
-// allowing web-page composition without the need for HTML.
+// allowing web-page composition without HTML.
 //
 //
 // Return value: If a parent node is passed in, we return the first child
@@ -2066,7 +2066,7 @@ function webGlHello() {
 }
 // Execute the main function
 //main();
-class ObjectStore {
+class ObjectStorage {
     createUi(parent) {
         let ui = {
             "input": {
@@ -2087,4 +2087,4 @@ class ObjectStore {
         input.click();
     }
 }
-var objectStore = new ObjectStore();
+var objectStorage = new ObjectStorage();
