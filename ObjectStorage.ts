@@ -1,33 +1,51 @@
-class ObjectStorageConfig {
-    accept: string;
-    multiple: boolean;
-}
-
-class ObjectStorage {
-
-    constructor( config: ObjectStorageConfig ) {
-
+namespace ElevenDotJs {
+    export enum ObjectStorageOperation {
+        readFile=1,
+        readFiles,
+        writeFile
     }
 
-	private createUi( parent: Node ) {
-		let ui = {
-            "input" : {
-                "type" : "file"
-            }
+    export class ObjectStorageConfig {
+        operation: ObjectStorageOperation;
+        parent: Node;
+        accept: string;
+        multiple: boolean;
+        label: string;
+        tooltip: string;
+    }
+
+    export class ObjectStorage {
+
+        constructor( config: ObjectStorageConfig ) {
+            this.createUi( config );
         }
-        DocComposer.compose( ui, parent );
-    }
-    public render() {
-        //this.saveToFile( { "test": 123 } );
-        let ui = this.createUi( document.body );
-    }
-    public saveToFile( obj: Object ) {
-        let json = JSON.stringify( obj );
-        const file: File = new File( [ json ], "temp", null );
-        let input = document.createElement( "input" );
-        input.type = "file";
-        input.click();
-    }
-}
 
-var objectStorage = new ObjectStorage( null );
+        private createUi( config: ObjectStorageConfig ) {
+            let ui = {
+                "input" : {
+                    "type" : "file",
+                    "onclick": ""
+                }
+            }
+            switch( config.operation ) {
+            case ObjectStorageOperation.readFile:
+                break;
+            case ObjectStorageOperation.readFiles:
+                break;
+            case ObjectStorageOperation.writeFile:
+                break;
+            }
+            DocComposer.compose( ui, config.parent );
+        }
+
+        public saveToFile( obj: Object ) {
+            let json = JSON.stringify( obj );
+            const file: File = new File( [ json ], "temp", null );
+            let input = document.createElement( "input" );
+            input.type = "file";
+            input.click();
+        }
+    }
+
+    export var objectStorage = new ObjectStorage( null );
+}    

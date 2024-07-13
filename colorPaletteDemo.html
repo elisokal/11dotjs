@@ -11,9 +11,15 @@
         span.style.color=color.css;
         let stop = 1;
     }
+    var colorPalette2; // To demonstrate second instance
 </script>
 <!--                                               This is the callback function. -->
-<body onload="colorPalette.open( new RGB(0,0,220), ( color ) => { demo( color ); } )">
+<body onload="ElevenDotJs.colorPalette.open( new RGB(0,220,0), ( color ) => { demo( color ); } )">
+    <button 
+        onclick="colorPalette2 = new ElevenDotJs.ColorPalette(); colorPalette2.open( new RGB(220,0,0), ( color ) => { demo( color ); }, 'colorPalette2' )"
+    >
+        Add Instance Two
+    </button>
     <span id="filler" style="font-size:1.2em">
         In he Senate, the term "U.C." stands for "unanimous consent" - usually verbal shorthand for an agreement by all senators to quickly take up and pass a bill. But with the November elections just months away, it might as well stand for: "You see? Our political opponents are dead wrong on this issue."
         Withthe focus of thepolitical universe turning to the upcoming fight for control of Congress and the White House, lawmakers are spending most of their time not on real legislative work but in trying to corner their rivals on hot-button issues.

@@ -684,595 +684,565 @@ Rgb.mColor = ~Rgb.mAlpha;
 // Return value: If a parent node is passed in, we return the first child
 // node that we appended to it. Otherwise, we return the whole wrapperNode.
 //
-class DocComposer {
-    static compose(source, parent) {
-        // A wrapper is necessary because the source may not be rooted (IOW, it might be >1 object)
-        const wrapperTag = "span";
-        const wrapper = { source }; // Source must be rooted on a single-property object
-        DocComposer.docRoot = document.createElement(wrapperTag);
-        DocComposer.composer(source, wrapperTag, DocComposer.docRoot, 0);
-        let ret = DocComposer.docRoot;
-        if (parent) {
-            // Now we can drop the wrapper node and just copy its children to the parent
-            ret = null;
-            while (DocComposer.docRoot.childNodes.length > 0) {
-                let node = DocComposer.docRoot.childNodes[0];
-                if (!ret) {
-                    ret = node;
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    class DocComposer {
+        static compose(source, parent) {
+            // A wrapper is necessary because the source may not be rooted (IOW, it might be >1 object)
+            const wrapperTag = "span";
+            const wrapper = { source }; // Source must be rooted on a single-property object
+            DocComposer.docRoot = document.createElement(wrapperTag);
+            DocComposer.composer(source, wrapperTag, DocComposer.docRoot, 0);
+            let ret = DocComposer.docRoot;
+            if (parent) {
+                // Now we can drop the wrapper node and just copy its children to the parent
+                ret = null;
+                while (DocComposer.docRoot.childNodes.length > 0) {
+                    let node = DocComposer.docRoot.childNodes[0];
+                    if (!ret) {
+                        ret = node;
+                    }
+                    parent.appendChild(node);
                 }
-                parent.appendChild(node);
             }
+            return ret;
         }
-        return ret;
-    }
-    static composer(source, parentKey, doc, level) {
-        if (source) {
-            let t1 = DocComposer.docTrace(doc);
-            let t2 = null;
-            for (let [key, value] of Object.entries(source)) {
-                key = DocComposer.fixTagName(key);
-                switch (typeof value) {
-                    case "object":
-                        if (!Array.isArray(value)) {
-                            value = [value]; // promote to array so we can treat objects and arrays the same below
-                        }
-                        // RECURSE
-                        for (let value2 of value) {
-                            let newNode = document.createElement(key);
-                            doc.appendChild(newNode);
-                            t2 = DocComposer.docTrace(newNode);
-                            DocComposer.composer(value2, key, newNode, level + 1);
-                        }
-                        break;
-                    case "string":
-                        if (key == 'text') {
-                            let textNode = document.createTextNode(value);
-                            doc.appendChild(textNode);
-                            t2 = DocComposer.docTrace(textNode);
-                        }
-                        else {
+        static composer(source, parentKey, doc, level) {
+            if (source) {
+                let t1 = DocComposer.docTrace(doc);
+                let t2 = null;
+                for (let [key, value] of Object.entries(source)) {
+                    key = DocComposer.fixTagName(key);
+                    switch (typeof value) {
+                        case "object":
+                            if (!Array.isArray(value)) {
+                                value = [value]; // promote to array so we can treat objects and arrays the same below
+                            }
+                            // RECURSE
+                            for (let value2 of value) {
+                                let newNode = document.createElement(key);
+                                doc.appendChild(newNode);
+                                t2 = DocComposer.docTrace(newNode);
+                                DocComposer.composer(value2, key, newNode, level + 1);
+                            }
+                            break;
+                        case "string":
+                            if (key == 'text') {
+                                let textNode = document.createTextNode(value);
+                                doc.appendChild(textNode);
+                                t2 = DocComposer.docTrace(textNode);
+                            }
+                            else {
+                                // set an attribute of the current document node
+                                doc.setAttribute(key, String(value));
+                            }
+                            break;
+                        case "number":
+                        case "boolean":
                             // set an attribute of the current document node
                             doc.setAttribute(key, String(value));
-                        }
+                            break;
+                    }
+                    let stop = 1;
+                }
+            }
+        }
+        //
+        // The use of JS object in place of html occasionally necessitates a little
+        // hack. HTML tags may repeat, for example, <input><input> is valid in HTML
+        // but the corresponding JSON { "input":null, "input":null } is invalid. As 
+        // a simple work-around, DocComposer removes any suffix beginning with the 
+        // underscore character. This lets page developers declare the likes of
+        //
+        // { "input":null, "input_abc":null } 
+        //                        ^
+        static fixTagName(tagName) {
+            let pos = tagName.indexOf('_');
+            if (pos >= 0) {
+                return tagName.substring(0, pos);
+            }
+            else {
+                return tagName;
+            }
+        }
+        static firstKeyOf(object) {
+            const [firstKey, firstValue] = Object.entries(object)[0];
+            return firstKey;
+        }
+        static docTrace(node) {
+            let ret = "";
+            do {
+                switch (node.nodeType) {
+                    case Node.ELEMENT_NODE: //1
+                        ret = node.tagName + " < " + ret;
                         break;
-                    case "number":
-                    case "boolean":
-                        // set an attribute of the current document node
-                        doc.setAttribute(key, String(value));
+                    case Node.ATTRIBUTE_NODE: //2
+                        ret = node.name + " < " + ret;
+                        break;
+                    case Node.TEXT_NODE: //3
+                        ret = node.textContent + " < " + ret;
+                        break;
+                    case Node.CDATA_SECTION_NODE: //4
+                    case Node.PROCESSING_INSTRUCTION_NODE: //7
+                    case Node.COMMENT_NODE: //8
+                    case Node.DOCUMENT_NODE: //9
+                    case Node.DOCUMENT_TYPE_NODE: //10
+                    case Node.DOCUMENT_FRAGMENT_NODE: //11
+                        ret = String(node.nodeType) + " < " + ret;
                         break;
                 }
-                let stop = 1;
+                node = node.parentNode;
+            } while (node);
+            return ret;
+        }
+    }
+    ElevenDotJs.DocComposer = DocComposer;
+})(ElevenDotJs || (ElevenDotJs = {}));
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    let DialogPosition;
+    (function (DialogPosition) {
+        DialogPosition[DialogPosition["center"] = 1] = "center";
+    })(DialogPosition = ElevenDotJs.DialogPosition || (ElevenDotJs.DialogPosition = {}));
+    class DialogConfig {
+        constructor(parent, title, dialogId, clientAreaId, position) {
+            this.parent = parent;
+            this.title = title;
+            this.dialogId = dialogId;
+            this.clientAreaId = clientAreaId;
+            this.position = position;
+        }
+    }
+    ElevenDotJs.DialogConfig = DialogConfig;
+    class Dialog {
+        constructor(config) {
+            this.dragStart = null;
+            this.config = config;
+            this.createUi();
+        }
+        createUi() {
+            let ui = {
+                "div": {
+                    "id": this.config.dialogId,
+                    "style": "position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: 99; "
+                        + "min-width: 256px; min-height: 256px; background-color: white; padding:0",
+                    "table": {
+                        //"style": "width: 100%",
+                        "tbody": {
+                            "tr": [
+                                {
+                                    "td": [
+                                        {
+                                            "text": this.config.title,
+                                            "style": "text-align: center; font-family: consolas; font-size: 1.2em; cursor: move",
+                                            "draggable": true,
+                                            "id": this.config.dialogId + "-titleBar"
+                                        },
+                                        {
+                                            "text": "\u00D7",
+                                            "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
+                                            "onclick": `ElevenDotJs.Dialog.detachElement('${this.config.dialogId}');`,
+                                            "title": "close me"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "td": {
+                                        "id": this.config.clientAreaId,
+                                        "colspan": 2
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            };
+            const ret = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
+            return ret;
+        }
+        setPosition() {
+            this.setPos(this.config.position);
+        }
+        setPos(position) {
+            if (position) {
+                switch (position) {
+                    case DialogPosition.center:
+                        let dialog = this.getDialogElement();
+                        let x = window.innerWidth / 2 - dialog.clientWidth / 2;
+                        let y = window.innerHeight / 2 - dialog.clientHeight / 2;
+                        dialog.style.left = `${x}px`;
+                        dialog.style.top = `${y}px`;
+                        let stop = 1;
+                        break;
+                }
             }
         }
-    }
-    //
-    // The use of JS object in place of html occasionally necessitates a little
-    // hack. HTML tags may repeat, for example, <input><input> is valid in HTML
-    // but the corresponding JSON { "input":null, "input":null } is invalid. As 
-    // a simple work-around, DocComposer removes any suffix beginning with the 
-    // underscore character. This lets page developers declare the likes of
-    //
-    // { "input":null, "input_abc":null } 
-    //                        ^
-    static fixTagName(tagName) {
-        let pos = tagName.indexOf('_');
-        if (pos >= 0) {
-            return tagName.substring(0, pos);
+        getDialogElement() {
+            return document.getElementById(this.config.dialogId);
         }
-        else {
-            return tagName;
-        }
-    }
-    static firstKeyOf(object) {
-        const [firstKey, firstValue] = Object.entries(object)[0];
-        return firstKey;
-    }
-    static docTrace(node) {
-        let ret = "";
-        do {
-            switch (node.nodeType) {
-                case Node.ELEMENT_NODE: //1
-                    ret = node.tagName + " < " + ret;
-                    break;
-                case Node.ATTRIBUTE_NODE: //2
-                    ret = node.name + " < " + ret;
-                    break;
-                case Node.TEXT_NODE: //3
-                    ret = node.textContent + " < " + ret;
-                    break;
-                case Node.CDATA_SECTION_NODE: //4
-                case Node.PROCESSING_INSTRUCTION_NODE: //7
-                case Node.COMMENT_NODE: //8
-                case Node.DOCUMENT_NODE: //9
-                case Node.DOCUMENT_TYPE_NODE: //10
-                case Node.DOCUMENT_FRAGMENT_NODE: //11
-                    ret = String(node.nodeType) + " < " + ret;
-                    break;
+        configureDragDrop(dialog, titleBar) {
+            if (dialog) {
+                let dropArea = dialog.parentNode;
+                if (dropArea) {
+                    titleBar.addEventListener("dragstart", function dropHandler(ev) {
+                        let de = ev;
+                        let me = ev;
+                        this.dragStart = [me.clientX, me.clientY];
+                        de.dataTransfer.setData("text/plain", "What a drag.");
+                    }.bind(this));
+                    // Add drop events to the dropArea (body)
+                    dropArea.addEventListener('dragover', (event) => {
+                        event.preventDefault(); // allow dropping
+                    });
+                    dropArea.addEventListener("drop", function dropHandler(ev) {
+                        let me = ev;
+                        let offset = [me.clientX - this.dragStart[0], me.clientY - this.dragStart[1]];
+                        this.dragStart = [this.dragStart[0] + offset[0], this.dragStart[1] + offset[1]];
+                        let droppedElement = dialog;
+                        let newCss = Dialog.applyOffset(droppedElement.style.left, droppedElement.style.top, offset[0], offset[1]);
+                        droppedElement.style.left = newCss.left;
+                        droppedElement.style.top = newCss.top;
+                        //droppedElement.style.transform = `translate(${offset[0]}px, ${offset[1]}px)`; // meta.ai!
+                        //droppedElement.style.left = `${de.x}px`;
+                        //droppedElement.style.top = `${de.y}px`;
+                        let stop = 1; //droppedElement.style.left = "";
+                    }.bind(this));
+                }
             }
-            node = node.parentNode;
-        } while (node);
-        return ret;
+        }
+        static detachElement(id) {
+            let el = document.getElementById(id);
+            if (el) {
+                el.remove();
+            }
+        }
+        // chat GPT 2024-06-22
+        static applyOffset(styleLeft, styleTop, offsetX, offsetY) {
+            // Parse the current left and top values to get the numeric values
+            let currentLeft = parseInt(styleLeft, 10);
+            let currentTop = parseInt(styleTop, 10);
+            // Apply the offsets
+            let newLeft = currentLeft + offsetX;
+            let newTop = currentTop + offsetY;
+            // Return the new left and top style strings
+            return {
+                left: `${newLeft}px`,
+                top: `${newTop}px`
+            };
+        }
     }
-}
-var DialogPosition;
-(function (DialogPosition) {
-    DialogPosition[DialogPosition["center"] = 1] = "center";
-})(DialogPosition || (DialogPosition = {}));
-class DialogConfig {
-    constructor(parent, title, dialogId, clientAreaId, position) {
-        this.parent = parent;
-        this.title = title;
-        this.dialogId = dialogId;
-        this.clientAreaId = clientAreaId;
-        this.position = position;
-    }
-}
-class Dialog {
-    constructor(config) {
-        this.dragStart = null;
-        this.config = config;
-        this.createUi();
-    }
-    createUi() {
-        let ui = {
-            "div": {
-                "id": this.config.dialogId,
-                "style": "position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: 99; "
-                    + "min-width: 256px; min-height: 256px; background-color: white; padding:0",
+    ElevenDotJs.Dialog = Dialog;
+})(ElevenDotJs || (ElevenDotJs = {}));
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    class ColorPalette {
+        constructor() {
+            this.imageCache = new Map();
+            this.markerLocation = null;
+            this.clickedLocation = null;
+        }
+        open(color, callback, varName) {
+            this.callback = callback;
+            this.varName = varName;
+            if (!this.varName) {
+                this.varName = "ElevenDotJs.colorPalette";
+            }
+            let canvas = this.getTheRenderCanvas();
+            if (!canvas) {
+                let title = "Intuitive Color Palette";
+                let dialogId = this.varName + "_colorPaletteDialog";
+                let clientAreaId = this.varName + "_dialogClientArea";
+                let dialog = new ElevenDotJs.Dialog(new ElevenDotJs.DialogConfig(document.body, title, dialogId, clientAreaId, ElevenDotJs.DialogPosition.center));
+                this.createUi(document.getElementById(clientAreaId));
+                canvas = this.getTheRenderCanvas();
+                this.configure(canvas);
+                dialog.setPosition();
+            }
+            this.setColor((color) ? color : new RGB(128, 0, 0), true);
+            if (false) {
+                // WebGL test!
+                initWebGl();
+                webGlHello();
+            }
+        }
+        createUi(parent) {
+            let ui = {
+                "input": {
+                    "id": this.varName + "_luminance",
+                    "type": "range",
+                    "min": "0",
+                    "max": "1",
+                    "step": "0.01",
+                    "oninput": this.varName + ".renderLuminance()",
+                    "style": "width: 100%; cursor: pointer",
+                    "title": "Luminance 0..100%"
+                },
                 "table": {
-                    //"style": "width: 100%",
                     "tbody": {
                         "tr": [
                             {
                                 "td": [
                                     {
-                                        "text": this.config.title,
-                                        "style": "text-align: center; font-family: consolas; font-size: 1.2em; cursor: move",
-                                        "draggable": true,
-                                        "id": this.config.dialogId + "-titleBar"
+                                        "canvas": {
+                                            "id": this.varName + "_rgbCanvas",
+                                            "width": 512,
+                                            "height": 512,
+                                            "style": "cursor: crosshair"
+                                        }
                                     },
                                     {
-                                        "text": "\u00D7",
-                                        "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
-                                        "onclick": `Dialog.detachElement('${this.config.dialogId}');`,
-                                        "title": "close me"
+                                        "canvas": {
+                                            "id": this.varName + "_colorSample",
+                                            "width": 64,
+                                            "height": 512,
+                                            "style": "border: 1px solid RGB(220,220,220);"
+                                        }
+                                    },
+                                    {
+                                        "style": "width:64px; vertical-align: top",
+                                        "input_r": {
+                                            "type": "number",
+                                            "style": "color:red; font-family: consolas",
+                                            "id": this.varName + "_redByte",
+                                            min: 0,
+                                            max: 255,
+                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                        },
+                                        "br_1": null,
+                                        "input_g": {
+                                            "type": "number",
+                                            "style": "color:green; font-family: consolas",
+                                            "id": this.varName + "_greenByte",
+                                            min: 0,
+                                            max: 255,
+                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                        },
+                                        "br_2": null,
+                                        "input_b": {
+                                            "type": "number",
+                                            "style": "color:blue; font-family: consolas",
+                                            "id": this.varName + "_blueByte",
+                                            min: 0,
+                                            max: 255,
+                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                        },
+                                        "br_3": null,
                                     }
                                 ]
-                            },
-                            {
-                                "td": {
-                                    "id": this.config.clientAreaId,
-                                    "colspan": 2
-                                }
                             }
+                            /*	For the WebGL poc					,
+                                                    {
+                                                        "td" : {
+                                                            "canvas" : {
+                                                                "id": "glCanvas",
+                                                                "width": 640,
+                                                                "height": 480
+                                                            }
+                                                        }
+                                                    }
+                            */
                         ]
                     }
                 }
-            }
-        };
-        const ret = DocComposer.compose(ui, this.config.parent);
-        this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
-        return ret;
-    }
-    setPosition() {
-        this.setPos(this.config.position);
-    }
-    setPos(position) {
-        if (position) {
-            switch (position) {
-                case DialogPosition.center:
-                    let dialog = this.getDialogElement();
-                    let x = window.innerWidth / 2 - dialog.clientWidth / 2;
-                    let y = window.innerHeight / 2 - dialog.clientHeight / 2;
-                    dialog.style.left = `${x}px`;
-                    dialog.style.top = `${y}px`;
-                    let stop = 1;
-                    break;
-            }
+            };
+            ElevenDotJs.DocComposer.compose(ui, parent);
         }
-    }
-    getDialogElement() {
-        return document.getElementById(this.config.dialogId);
-    }
-    configureDragDrop(dialog, titleBar) {
-        if (dialog) {
-            let dropArea = dialog.parentNode;
-            if (dropArea) {
-                titleBar.addEventListener("dragstart", function dropHandler(ev) {
-                    let de = ev;
-                    let me = ev;
-                    this.dragStart = [me.clientX, me.clientY];
-                    de.dataTransfer.setData("text/plain", "What a drag.");
-                }.bind(this));
-                // Add drop events to the dropArea (body)
-                dropArea.addEventListener('dragover', (event) => {
-                    event.preventDefault(); // allow dropping
-                });
-                dropArea.addEventListener("drop", function dropHandler(ev) {
-                    let me = ev;
-                    let offset = [me.clientX - this.dragStart[0], me.clientY - this.dragStart[1]];
-                    this.dragStart = [this.dragStart[0] + offset[0], this.dragStart[1] + offset[1]];
-                    let droppedElement = dialog;
-                    let newCss = Dialog.applyOffset(droppedElement.style.left, droppedElement.style.top, offset[0], offset[1]);
-                    droppedElement.style.left = newCss.left;
-                    droppedElement.style.top = newCss.top;
-                    //droppedElement.style.transform = `translate(${offset[0]}px, ${offset[1]}px)`; // meta.ai!
-                    //droppedElement.style.left = `${de.x}px`;
-                    //droppedElement.style.top = `${de.y}px`;
-                    let stop = 1; //droppedElement.style.left = "";
-                }.bind(this));
-            }
+        configure(canvas) {
+            canvas.addEventListener('click', this.handleMouseClick.bind(this));
         }
-    }
-    static detachElement(id) {
-        let el = document.getElementById(id);
-        if (el) {
-            el.remove();
+        getTheRenderCanvas() {
+            return document.getElementById(this.varName + "_rgbCanvas");
         }
-    }
-    // chat GPT 2024-06-22
-    static applyOffset(styleLeft, styleTop, offsetX, offsetY) {
-        // Parse the current left and top values to get the numeric values
-        let currentLeft = parseInt(styleLeft, 10);
-        let currentTop = parseInt(styleTop, 10);
-        // Apply the offsets
-        let newLeft = currentLeft + offsetX;
-        let newTop = currentTop + offsetY;
-        // Return the new left and top style strings
-        return {
-            left: `${newLeft}px`,
-            top: `${newTop}px`
-        };
-    }
-}
-class ColorPalette {
-    constructor() {
-        this.imageCache = new Map();
-        this.markerLocation = null;
-        this.clickedLocation = null;
-        this.g_b = 0.0;
-        this.g_count = 0;
-        // Attach the event handler to the canvas
-        this.init();
-    }
-    createUi(parent) {
-        let ui = {
-            "input": {
-                "id": "luminance",
-                "type": "range",
-                "min": "0",
-                "max": "1",
-                "step": "0.01",
-                "oninput": "colorPalette.renderLuminance();",
-                "style": "width: 100%; cursor: pointer",
-                "title": "Luminance 0..100%"
-            },
-            "table": {
-                "tbody": {
-                    "tr": [
-                        {
-                            "td": [
-                                {
-                                    "canvas": {
-                                        "id": "rgbCanvas",
-                                        "width": 512,
-                                        "height": 512,
-                                        "style": "cursor: crosshair"
-                                    }
-                                },
-                                {
-                                    "canvas": {
-                                        "id": "colorSample",
-                                        "width": 64,
-                                        "height": 512,
-                                        "style": "border: 1px solid RGB(220,220,220);"
-                                    }
-                                },
-                                {
-                                    "style": "width:64px; vertical-align: top",
-                                    "input_r": {
-                                        "type": "number",
-                                        "style": "color:red; font-family: consolas",
-                                        "id": "redByte",
-                                        min: 0,
-                                        max: 255,
-                                        "oninput": "colorPalette.onByteTextUpdate();"
-                                    },
-                                    "br_1": null,
-                                    "input_g": {
-                                        "type": "number",
-                                        "style": "color:green; font-family: consolas",
-                                        "id": "greenByte",
-                                        min: 0,
-                                        max: 255,
-                                        "oninput": "colorPalette.onByteTextUpdate();"
-                                    },
-                                    "br_2": null,
-                                    "input_b": {
-                                        "type": "number",
-                                        "style": "color:blue; font-family: consolas",
-                                        "id": "blueByte",
-                                        min: 0,
-                                        max: 255,
-                                        "oninput": "colorPalette.onByteTextUpdate();"
-                                    },
-                                    "br_3": null,
-                                }
-                            ]
-                        }
-                        /*	For the WebGL poc					,
-                                                {
-                                                    "td" : {
-                                                        "canvas" : {
-                                                            "id": "glCanvas",
-                                                            "width": 640,
-                                                            "height": 480
-                                                        }
-                                                    }
-                                                }
-                        */
-                    ]
+        renderLuminance() {
+            let el = this.getTheLuminanceSlider();
+            if (el) {
+                this.renderPalette(Number(el.value));
+                if (this.clickedLocation) {
+                    this.selectColorAt(this.clickedLocation, true);
                 }
             }
-        };
-        DocComposer.compose(ui, parent);
-    }
-    open(color, callback) {
-        // Testing DocComposer
-        this.callback = callback;
-        let canvas = this.getTheRenderCanvas();
-        if (!canvas) {
-            let title = "Intuitive Color Palette";
-            let dialogId = "colorPaletteDialog";
-            let clientAreaId = "dialogClientArea";
-            let dialog = new Dialog(new DialogConfig(document.body, title, dialogId, clientAreaId, DialogPosition.center));
-            this.createUi(document.getElementById(clientAreaId));
-            canvas = this.getTheRenderCanvas();
-            this.configure(canvas);
-            dialog.setPosition();
         }
-        this.setColor((color) ? color : new RGB(128, 0, 0), true);
-        if (false) {
-            // WebGL test!
-            initWebGl();
-            webGlHello();
+        getTheLuminanceSlider() {
+            return document.getElementById(this.varName + "_luminance");
         }
-    }
-    configure(canvas) {
-        canvas.addEventListener('click', this.handleMouseClick.bind(this));
-    }
-    init() {
-        let canvas = this.getTheRenderCanvas();
-        if (canvas) {
-            this.configure(canvas);
-        }
-    }
-    getTheRenderCanvas() {
-        return document.getElementById("rgbCanvas");
-    }
-    animate22() {
-        this.g_b = 0.0;
-        this.g_count = 0;
-        this.g_Timeout = setInterval(this.nextFrame, 1);
-    }
-    nextFrame() {
-        this.g_b += 0.01;
-        if (this.g_b >= 1) {
-            this.g_b = 0.0;
-            this.g_count++;
-            if (this.g_count == 1) {
-                clearInterval(this.g_Timeout);
+        renderPalette(luminance) {
+            let key = this.luminanceKey(luminance);
+            let vi = null;
+            if (this.imageCache) {
+                if (this.imageCache.has(key)) {
+                    vi = this.imageCache.get(key);
+                    //console.log( 'Image cache hit *(`.');
+                }
             }
-        }
-        this.renderPalette(this.g_b);
-    }
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    renderLuminance() {
-        let el = this.getTheLuminanceSlider();
-        if (el) {
-            this.renderPalette(Number(el.value));
-            if (this.clickedLocation) {
-                this.selectColorAt(this.clickedLocation, true);
-            }
-        }
-    }
-    getTheLuminanceSlider() {
-        return document.getElementById("luminance");
-    }
-    renderPalette(luminance) {
-        let key = this.luminanceKey(luminance);
-        let vi = null;
-        if (this.imageCache) {
-            if (this.imageCache.has(key)) {
-                vi = this.imageCache.get(key);
-                //console.log( 'Image cache hit *(`.');
-            }
-        }
-        if (!vi) {
-            //console.log( 'Image cache miss ()`.');
-            let colors = Rgb.colorsWithBrightness(luminance);
-            vi = Rgb.render(colors, ColorPalette.rgbCanvasFill);
-            this.imageCache.set(key, vi);
-        }
-        this.showIt(vi.getImageData(), luminance);
-    }
-    luminanceKey(brightnessZeroToOne) {
-        let ret = `luminance=${brightnessZeroToOne.toFixed(5)}`;
-        if (ret.length > 15) {
-            let stop = 1;
-        }
-        return ret;
-    }
-    //
-    // This takes about 1.5 seconds and consumes about 200MB!
-    //
-    preloadPalettes() {
-        if (this.imageCache) {
-            console.log('Loading...');
-            let start = new Date();
-            let step = 1.0 / 100.0;
-            for (let b = 0.0; b <= 1.0; b += step) {
-                let key = this.luminanceKey(b);
-                let vi = this.colorsWithBrightness(b);
+            if (!vi) {
+                //console.log( 'Image cache miss ()`.');
+                let colors = Rgb.colorsWithBrightness(luminance);
+                vi = Rgb.render(colors, ColorPalette.rgbCanvasFill);
                 this.imageCache.set(key, vi);
             }
-            let end = new Date();
-            console.log(`Loading completed in ${end.getTime() - start.getTime()} ms.`);
+            this.showIt(vi.getImageData(), luminance);
         }
-    }
-    colorsWithBrightness(brightnessZeroToOne) {
-        let colors = Rgb.colorsWithBrightness(brightnessZeroToOne);
-        let ret = Rgb.render(colors, ColorPalette.rgbCanvasFill);
-        return ret;
-    }
-    showIt(palette, luminance) {
-        this.clearCanvas();
-        let canvas = this.getTheRenderCanvas();
-        if (canvas) {
-            let ctx = this.get2DCanvasRenderingContext();
-            if (ctx) {
-                let sx = canvas.width / palette.width;
-                let sy = canvas.height / palette.height;
-                let palette2 = VisImage.fromImageData(palette).cropImageToContent();
-                let palette3 = palette2.scale(canvas.width, canvas.height);
-                ctx.font = "1em consolas";
-                ctx.putImageData(palette3.getImageData(), 0, 0);
-                this.showLuminanceLabel(ctx, luminance);
-                let stop = true;
+        luminanceKey(brightnessZeroToOne) {
+            let ret = `luminance=${brightnessZeroToOne.toFixed(5)}`;
+            if (ret.length > 15) {
+                let stop = 1;
+            }
+            return ret;
+        }
+        colorsWithBrightness(brightnessZeroToOne) {
+            let colors = Rgb.colorsWithBrightness(brightnessZeroToOne);
+            let ret = Rgb.render(colors, ColorPalette.rgbCanvasFill);
+            return ret;
+        }
+        showIt(palette, luminance) {
+            this.clearCanvas();
+            let canvas = this.getTheRenderCanvas();
+            if (canvas) {
+                let ctx = this.get2DCanvasRenderingContext();
+                if (ctx) {
+                    let sx = canvas.width / palette.width;
+                    let sy = canvas.height / palette.height;
+                    let palette2 = VisImage.fromImageData(palette).cropImageToContent();
+                    let palette3 = palette2.scale(canvas.width, canvas.height);
+                    ctx.font = "1em consolas";
+                    ctx.putImageData(palette3.getImageData(), 0, 0);
+                    this.showLuminanceLabel(ctx, luminance);
+                    let stop = true;
+                }
             }
         }
-    }
-    showLuminanceLabel(ctx, luminance) {
-        ctx.clearRect(0, 0, 170, 24);
-        ctx.fillText(`luminance = ${String((luminance * 100).toFixed(0))}%`, 5, 15);
-    }
-    get2DCanvasRenderingContext() {
-        let ret = this.getTheRenderCanvas().getContext("2d");
-        // Chrome Developer Tools prompted:
-        // Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set 
-        // to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
-        ret.getContextAttributes().willReadFrequently = true;
-        return ret;
-    }
-    clearCanvas() {
-        let canvas = this.getTheRenderCanvas();
-        if (canvas) {
-            let ctx = this.get2DCanvasRenderingContext();
-            if (ctx) {
-                ctx.clearRect(0, 0, 512, 512);
+        showLuminanceLabel(ctx, luminance) {
+            ctx.clearRect(0, 0, 170, 24);
+            ctx.fillText(`luminance = ${String((luminance * 100).toFixed(0))}%`, 5, 15);
+        }
+        get2DCanvasRenderingContext() {
+            let ret = this.getTheRenderCanvas().getContext("2d");
+            // Chrome Developer Tools prompted:
+            // Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set 
+            // to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently
+            ret.getContextAttributes().willReadFrequently = true;
+            return ret;
+        }
+        clearCanvas() {
+            let canvas = this.getTheRenderCanvas();
+            if (canvas) {
+                let ctx = this.get2DCanvasRenderingContext();
+                if (ctx) {
+                    ctx.clearRect(0, 0, 512, 512);
+                }
+            }
+            this.markerLocation = null;
+        }
+        getTheColorSampleCanvas() {
+            return document.getElementById(this.varName + "_colorSample");
+        }
+        // private  to handle mouse click events
+        handleMouseClick(event) {
+            if (event instanceof PointerEvent) {
+                const canvas = this.getTheRenderCanvas();
+                const ctx = this.get2DCanvasRenderingContext();
+                const rect = canvas.getBoundingClientRect();
+                const x = Math.floor(event.clientX - rect.left);
+                const y = Math.floor(event.clientY - rect.top);
+                const raster = ctx.getImageData(0, 0, rect.width, rect.height);
+                console.log(`Mouse click at: ${x.toFixed(2)}, ${y.toFixed(2)}`);
+                this.selectColorAt(new ColRow(x, y), true);
             }
         }
-        this.markerLocation = null;
-    }
-    getTheColorSampleCanvas() {
-        return document.getElementById("colorSample");
-    }
-    // private  to handle mouse click events
-    handleMouseClick(event) {
-        if (event instanceof PointerEvent) {
+        selectColorAt(location, showBytes) {
+            this.clickedLocation = location;
             const canvas = this.getTheRenderCanvas();
             const ctx = this.get2DCanvasRenderingContext();
             const rect = canvas.getBoundingClientRect();
-            const x = Math.floor(event.clientX - rect.left);
-            const y = Math.floor(event.clientY - rect.top);
             const raster = ctx.getImageData(0, 0, rect.width, rect.height);
-            console.log(`Mouse click at: ${x.toFixed(2)}, ${y.toFixed(2)}`);
-            this.selectColorAt(new ColRow(x, y), true);
+            const index = location.getAsIndex(rect.width);
+            const color = new RGB(raster.data[index], raster.data[index + 1], raster.data[index + 2]);
+            const sample = this.getTheColorSampleCanvas();
+            color.fillCanvas(sample);
+            if (this.markerLocation) {
+                // remove old marker
+                VisImage.toggleMarker(this.markerLocation.getCol(), this.markerLocation.getRow(), ctx);
+            }
+            VisImage.toggleMarker(location.getCol(), location.getRow(), ctx);
+            this.markerLocation = location;
+            sample.title = color.toString();
+            //navigator.clipboard.writeText(color.toString());
+            if (showBytes) {
+                this.showRgbBytes(color);
+            }
+            if (this.callback) {
+                this.callback({ "css": color.cssString() });
+            }
         }
-    }
-    selectColorAt(location, showBytes) {
-        this.clickedLocation = location;
-        const canvas = this.getTheRenderCanvas();
-        const ctx = this.get2DCanvasRenderingContext();
-        const rect = canvas.getBoundingClientRect();
-        const raster = ctx.getImageData(0, 0, rect.width, rect.height);
-        const index = location.getAsIndex(rect.width);
-        const color = new RGB(raster.data[index], raster.data[index + 1], raster.data[index + 2]);
-        const sample = this.getTheColorSampleCanvas();
-        color.fillCanvas(sample);
-        if (this.markerLocation) {
-            // remove old marker
-            VisImage.toggleMarker(this.markerLocation.getCol(), this.markerLocation.getRow(), ctx);
+        showRgbBytes(color) {
+            document.getElementById(this.varName + "_redByte").value = color.r.toString();
+            document.getElementById(this.varName + "_greenByte").value = color.g.toString();
+            document.getElementById(this.varName + "_blueByte").value = color.b.toString();
         }
-        VisImage.toggleMarker(location.getCol(), location.getRow(), ctx);
-        this.markerLocation = location;
-        sample.title = color.toString();
-        //navigator.clipboard.writeText(color.toString());
-        if (showBytes) {
-            this.showRgbBytes(color);
+        syncLuminanceSlider(color) {
+            let input = this.getTheLuminanceSlider();
+            if (input) {
+                let sliderLuminance = this.sliderLuminance();
+                let colorLuminance = color.luminance();
+                if (colorLuminance != sliderLuminance) {
+                    input.value = String(colorLuminance);
+                    this.showLuminanceLabel(this.get2DCanvasRenderingContext(), Number(colorLuminance));
+                }
+            }
         }
-        if (this.callback) {
-            this.callback({ "css": color.cssString() });
+        sliderLuminance() {
+            let input = this.getTheLuminanceSlider();
+            let sliderLuminance = Number(input.value);
+            return sliderLuminance;
         }
-    }
-    showRgbBytes(color) {
-        document.getElementById("redByte").value = color.r.toString();
-        document.getElementById("greenByte").value = color.g.toString();
-        document.getElementById("blueByte").value = color.b.toString();
-    }
-    syncLuminanceSlider(color) {
-        let input = this.getTheLuminanceSlider();
-        if (input) {
-            let sliderLuminance = this.sliderLuminance();
-            let colorLuminance = color.luminance();
-            if (colorLuminance != sliderLuminance) {
-                input.value = String(colorLuminance);
-                this.showLuminanceLabel(this.get2DCanvasRenderingContext(), Number(colorLuminance));
+        setColor(color, showBytes) {
+            const luminance = color.luminance();
+            this.renderPalette(luminance);
+            const canvas = this.getTheRenderCanvas();
+            const rect = canvas.getBoundingClientRect();
+            const ctx = this.get2DCanvasRenderingContext();
+            const raster = ctx.getImageData(0, 0, rect.width, rect.height);
+            const vi = VisImage.fromImageData(raster);
+            let location = vi.findColor(color);
+            if (!location) {
+                location = vi.findColorApproximate(color, 1);
+            }
+            if (location) {
+                this.selectColorAt(location, showBytes);
+                this.syncLuminanceSlider(color);
+            }
+            else {
+                throw color.toString() + " not found";
+            }
+        }
+        onByteTextUpdate() {
+            const color = new RGB(this.harvestRgbByte(document.getElementById(this.varName + "_redByte")), this.harvestRgbByte(document.getElementById(this.varName + "_greenByte")), this.harvestRgbByte(document.getElementById(this.varName + "_blueByte")));
+            this.setColor(color, false);
+        }
+        harvestRgbByte(input) {
+            this.validateInput(input);
+            const ret = Number((input.value));
+            return ret;
+        }
+        validateInput(input) {
+            let value = parseInt(input.value, 10);
+            if (isNaN(value)) {
+                input.value = ''; // Clear the input if it's not a valid number
+                return;
+            }
+            if (value < input.min) {
+                input.value = input.min;
+            }
+            else if (value > input.max) {
+                input.value = input.max;
             }
         }
     }
-    sliderLuminance() {
-        let input = this.getTheLuminanceSlider();
-        let sliderLuminance = Number(input.value);
-        return sliderLuminance;
-    }
-    setColor(color, showBytes) {
-        const luminance = color.luminance();
-        this.renderPalette(luminance);
-        const canvas = this.getTheRenderCanvas();
-        const rect = canvas.getBoundingClientRect();
-        const ctx = this.get2DCanvasRenderingContext();
-        const raster = ctx.getImageData(0, 0, rect.width, rect.height);
-        const vi = VisImage.fromImageData(raster);
-        let location = vi.findColor(color);
-        if (!location) {
-            location = vi.findColorApproximate(color, 1);
-        }
-        if (location) {
-            this.selectColorAt(location, showBytes);
-            this.syncLuminanceSlider(color);
-        }
-        else {
-            throw color.toString() + " not found";
-        }
-    }
-    onByteTextUpdate() {
-        const color = new RGB(this.harvestRgbByte(document.getElementById("redByte")), this.harvestRgbByte(document.getElementById("greenByte")), this.harvestRgbByte(document.getElementById("blueByte")));
-        this.setColor(color, false);
-    }
-    harvestRgbByte(input) {
-        this.validateInput(input);
-        const ret = Number((input.value));
-        return ret;
-    }
-    validateInput(input) {
-        let value = parseInt(input.value, 10);
-        if (isNaN(value)) {
-            input.value = ''; // Clear the input if it's not a valid number
-            return;
-        }
-        if (value < input.min) {
-            input.value = input.min;
-        }
-        else if (value > input.max) {
-            input.value = input.max;
-        }
-    }
-}
-ColorPalette.rgbCanvasFill = null;
-var colorPalette = new ColorPalette();
+    ColorPalette.rgbCanvasFill = null;
+    ElevenDotJs.ColorPalette = ColorPalette;
+    ElevenDotJs.colorPalette = new ColorPalette();
+})(ElevenDotJs || (ElevenDotJs = {}));
 /* Generated from Java with JSweet 3.1.0 - http://www.jsweet.org */
 var Axis;
 (function (Axis) {
@@ -2066,25 +2036,46 @@ function webGlHello() {
 }
 // Execute the main function
 //main();
-class ObjectStorage {
-    createUi(parent) {
-        let ui = {
-            "input": {
-                "type": "file"
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    let ObjectStorageOperation;
+    (function (ObjectStorageOperation) {
+        ObjectStorageOperation[ObjectStorageOperation["readFile"] = 1] = "readFile";
+        ObjectStorageOperation[ObjectStorageOperation["readFiles"] = 2] = "readFiles";
+        ObjectStorageOperation[ObjectStorageOperation["writeFile"] = 3] = "writeFile";
+    })(ObjectStorageOperation = ElevenDotJs.ObjectStorageOperation || (ElevenDotJs.ObjectStorageOperation = {}));
+    class ObjectStorageConfig {
+    }
+    ElevenDotJs.ObjectStorageConfig = ObjectStorageConfig;
+    class ObjectStorage {
+        constructor(config) {
+            this.createUi(config);
+        }
+        createUi(config) {
+            let ui = {
+                "input": {
+                    "type": "file",
+                    "onclick": ""
+                }
+            };
+            switch (config.operation) {
+                case ObjectStorageOperation.readFile:
+                    break;
+                case ObjectStorageOperation.readFiles:
+                    break;
+                case ObjectStorageOperation.writeFile:
+                    break;
             }
-        };
-        DocComposer.compose(ui, parent);
+            ElevenDotJs.DocComposer.compose(ui, config.parent);
+        }
+        saveToFile(obj) {
+            let json = JSON.stringify(obj);
+            const file = new File([json], "temp", null);
+            let input = document.createElement("input");
+            input.type = "file";
+            input.click();
+        }
     }
-    render() {
-        //this.saveToFile( { "test": 123 } );
-        let ui = this.createUi(document.body);
-    }
-    saveToFile(obj) {
-        let json = JSON.stringify(obj);
-        const file = new File([json], "temp", null);
-        let input = document.createElement("input");
-        input.type = "file";
-        input.click();
-    }
-}
-var objectStorage = new ObjectStorage();
+    ElevenDotJs.ObjectStorage = ObjectStorage;
+    ElevenDotJs.objectStorage = new ObjectStorage(null);
+})(ElevenDotJs || (ElevenDotJs = {}));
