@@ -54,7 +54,7 @@ With the **11dotjs** web-authoring model, you can
   }
 ```
 ## See a Demo
-Intuitive Color Palette, the first **11dotjs** component, contains neither static nor generated HTML. There’s a demo at http://elisokal.com/11dotjs/colorPaletteDemo2.html. 
+Intuitive Color Palette, the first **11dotjs** component, contains neither static nor generated HTML. There’s a demo at http://elisokal.com/11dotjs/colorPaletteDemo.html. 
 ## Learn More
 Write to elisokal@gmail.com to discuss integration, customization, and collaboration.
 
