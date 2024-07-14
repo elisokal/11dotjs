@@ -16,26 +16,41 @@ namespace ElevenDotJs {
 
     export class ObjectStorage {
 
+        private config: ObjectStorageConfig;
+
         constructor( config: ObjectStorageConfig ) {
-            this.createUi( config );
+            this.config = config;
+            this.createUi();
         }
 
-        private createUi( config: ObjectStorageConfig ) {
+        private createUi() {
             let ui = {
-                "input" : {
-                    "type" : "file",
-                    "onclick": ""
+                "label": {
+                    "text": this.config.label,
+                    "input": {
+                        "type" : "file",
+                        "title": this.config.tooltip,
+                        "accept": this.config.accept,
+                        "multiple": this.config.multiple,
+                    }
                 }
             }
-            switch( config.operation ) {
+            const el = DocComposer.compose( ui, this.config.parent );
+            el.addEventListener( "input", this.inputHandler() );
+        }
+
+        private inputHandler(): EventListener {
+            switch( this.config.operation ) {
             case ObjectStorageOperation.readFile:
+                return function( ev: Event ) { alert( "readFile " + ev.target )};
                 break;
             case ObjectStorageOperation.readFiles:
+                return function( ev: Event ) { alert( "readFiles " + ev.target )};
                 break;
             case ObjectStorageOperation.writeFile:
+                return function( ev: Event ) { alert( "writeFile " + ev.target )};
                 break;
             }
-            DocComposer.compose( ui, config.parent );
         }
 
         public saveToFile( obj: Object ) {
@@ -47,5 +62,5 @@ namespace ElevenDotJs {
         }
     }
 
-    export var objectStorage = new ObjectStorage( null );
+    //export var objectStorage = new ObjectStorage( null );
 }    

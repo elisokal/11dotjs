@@ -19,7 +19,11 @@ namespace ElevenDotJs {
     export class Dialog {
         private dragStart = null;
         private config: DialogConfig;
-        private static idOfDraggingDialog: string;
+
+        // This works around an issue with two dialogs sharing the drop area. The
+        // dragover and drop event fire for all dialogs when user drags one of them.
+        private static draggingDialog: Dialog;
+
         constructor( config: DialogConfig ) {
             this.config = config;
             this.createUi();
@@ -100,7 +104,7 @@ namespace ElevenDotJs {
                         this.dragStart = [ me.clientX, me.clientY ];
                         de.dataTransfer.setData("text/plain", "What a drag.");
                         console.log( "Drag Start for " + ( dialog as HTMLElement ).getAttribute("id") );
-                        Dialog.idOfDraggingDialog = titleBar.id;
+                        Dialog.draggingDialog = this;
                     }.bind(this));
                     // Add drop events to the dropArea (body)
                     dropArea.addEventListener( 'dragover', function (ev) {
@@ -108,8 +112,7 @@ namespace ElevenDotJs {
                         //console.log( "Dragging " + ( dialog as HTMLElement ).getAttribute("id") );
                     }.bind(this));				
                     dropArea.addEventListener( "drop", function (ev) {
-                        // This works around an issue with two dialogs sharing the drop area.
-                        if( titleBar.id == Dialog.idOfDraggingDialog ) {
+                        if( this == Dialog.draggingDialog ) {
                             let me: MouseEvent = ev as MouseEvent;
                             let offset = [ me.clientX - this.dragStart[0], me.clientY - this.dragStart[1] ];
                             this.dragStart = [ this.dragStart[0] + offset[0], this.dragStart[1] + offset[1] ];

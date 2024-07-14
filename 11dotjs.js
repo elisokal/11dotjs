@@ -891,7 +891,7 @@ var ElevenDotJs;
                         this.dragStart = [me.clientX, me.clientY];
                         de.dataTransfer.setData("text/plain", "What a drag.");
                         console.log("Drag Start for " + dialog.getAttribute("id"));
-                        Dialog.idOfDraggingDialog = titleBar.id;
+                        Dialog.draggingDialog = this;
                     }.bind(this));
                     // Add drop events to the dropArea (body)
                     dropArea.addEventListener('dragover', function (ev) {
@@ -899,7 +899,7 @@ var ElevenDotJs;
                         //console.log( "Dragging " + ( dialog as HTMLElement ).getAttribute("id") );
                     }.bind(this));
                     dropArea.addEventListener("drop", function (ev) {
-                        if (titleBar.id == Dialog.idOfDraggingDialog) {
+                        if (this == Dialog.draggingDialog) {
                             let me = ev;
                             let offset = [me.clientX - this.dragStart[0], me.clientY - this.dragStart[1]];
                             this.dragStart = [this.dragStart[0] + offset[0], this.dragStart[1] + offset[1]];
@@ -2054,24 +2054,36 @@ var ElevenDotJs;
     ElevenDotJs.ObjectStorageConfig = ObjectStorageConfig;
     class ObjectStorage {
         constructor(config) {
-            this.createUi(config);
+            this.config = config;
+            this.createUi();
         }
-        createUi(config) {
+        createUi() {
             let ui = {
-                "input": {
-                    "type": "file",
-                    "onclick": ""
+                "label": {
+                    "text": this.config.label,
+                    "input": {
+                        "type": "file",
+                        "title": this.config.tooltip,
+                        "accept": this.config.accept,
+                        "multiple": this.config.multiple,
+                    }
                 }
             };
-            switch (config.operation) {
+            const el = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            el.addEventListener("input", this.inputHandler());
+        }
+        inputHandler() {
+            switch (this.config.operation) {
                 case ObjectStorageOperation.readFile:
+                    return function (ev) { alert("readFile " + ev.target); };
                     break;
                 case ObjectStorageOperation.readFiles:
+                    return function (ev) { alert("readFiles " + ev.target); };
                     break;
                 case ObjectStorageOperation.writeFile:
+                    return function (ev) { alert("writeFile " + ev.target); };
                     break;
             }
-            ElevenDotJs.DocComposer.compose(ui, config.parent);
         }
         saveToFile(obj) {
             let json = JSON.stringify(obj);
@@ -2082,5 +2094,5 @@ var ElevenDotJs;
         }
     }
     ElevenDotJs.ObjectStorage = ObjectStorage;
-    ElevenDotJs.objectStorage = new ObjectStorage(null);
+    //export var objectStorage = new ObjectStorage( null );
 })(ElevenDotJs || (ElevenDotJs = {}));

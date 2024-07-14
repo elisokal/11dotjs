@@ -5,7 +5,13 @@
 <title>DEMO: 11dotjs Intuitive Color Palette</title>
 </head>
 
-<body onload="objectStorage.render()">
+<body onload='new ElevenDotJs.ObjectStorage( { 
+    "operation": ElevenDotJs.ObjectStorageOperation.readFile, 
+    "parent": document.body,
+    "accept": "",
+    "multiple": false,
+    "label": "Click here to read objects from a file: ",
+    "tooltip": "Select file to read"})' >
 </body>
 <script type="text/JavaScript" src="./11dotjs.js"></script>
-</html>
+</html> 

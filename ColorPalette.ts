@@ -5,6 +5,7 @@ namespace ElevenDotJs {
 		private clickedLocation: ColRow = null;
 		private static rgbCanvasFill = null;
 		private callback: Function;
+		// To setup oninput events, we need the name of the ColorPalette object
 		private varName: string;
 
 		public open( color: RGB, callback: Function, varName?: string ) {
