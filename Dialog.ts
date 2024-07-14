@@ -19,6 +19,7 @@ namespace ElevenDotJs {
     export class Dialog {
         private dragStart = null;
         private config: DialogConfig;
+        private static idOfDraggingDialog: string;
         constructor( config: DialogConfig ) {
             this.config = config;
             this.createUi();
@@ -62,7 +63,7 @@ namespace ElevenDotJs {
                 }
             };
             const ret: Node = DocComposer.compose( ui, this.config.parent );
-            this.configureDragDrop( ret, document.getElementById( this.config.dialogId+"-titleBar") );
+            this.configureDragDrop( ret as HTMLElement, document.getElementById( this.config.dialogId+"-titleBar") );
             return ret;
         }
 
@@ -89,32 +90,37 @@ namespace ElevenDotJs {
             return document.getElementById( this.config.dialogId );
         }
 
-        private configureDragDrop( dialog: Node, titleBar: Node ) {
+        private configureDragDrop( dialog: HTMLElement, titleBar: HTMLElement ) {
             if( dialog ) {
                 let dropArea = dialog.parentNode;
                 if( dropArea ) {
-                    titleBar.addEventListener( "dragstart", function dropHandler(ev) {
+                    titleBar.addEventListener( "dragstart", function (ev) {
                         let de: DragEvent = ev as DragEvent;
                         let me: MouseEvent = ev as MouseEvent;
                         this.dragStart = [ me.clientX, me.clientY ];
                         de.dataTransfer.setData("text/plain", "What a drag.");
+                        console.log( "Drag Start for " + ( dialog as HTMLElement ).getAttribute("id") );
+                        Dialog.idOfDraggingDialog = titleBar.id;
                     }.bind(this));
                     // Add drop events to the dropArea (body)
-                    dropArea.addEventListener( 'dragover', (event) => {
-                        event.preventDefault(); // allow dropping
-                    });				
-                    dropArea.addEventListener( "drop", function dropHandler(ev) {
-                        let me: MouseEvent = ev as MouseEvent;
-                        let offset = [ me.clientX - this.dragStart[0], me.clientY - this.dragStart[1] ];
-                        this.dragStart = [ this.dragStart[0] + offset[0], this.dragStart[1] + offset[1] ];
-                        let droppedElement = dialog as HTMLElement;
-                        let newCss = Dialog.applyOffset( droppedElement.style.left, droppedElement.style.top, offset[0], offset[1] );
-                        droppedElement.style.left = newCss.left;
-                        droppedElement.style.top = newCss.top;
-                        //droppedElement.style.transform = `translate(${offset[0]}px, ${offset[1]}px)`; // meta.ai!
-                        //droppedElement.style.left = `${de.x}px`;
-                        //droppedElement.style.top = `${de.y}px`;
-                        let stop = 1;//droppedElement.style.left = "";
+                    dropArea.addEventListener( 'dragover', function (ev) {
+                        ev.preventDefault(); // allow dropping
+                        //console.log( "Dragging " + ( dialog as HTMLElement ).getAttribute("id") );
+                    }.bind(this));				
+                    dropArea.addEventListener( "drop", function (ev) {
+                        // This works around an issue with two dialogs sharing the drop area.
+                        if( titleBar.id == Dialog.idOfDraggingDialog ) {
+                            let me: MouseEvent = ev as MouseEvent;
+                            let offset = [ me.clientX - this.dragStart[0], me.clientY - this.dragStart[1] ];
+                            this.dragStart = [ this.dragStart[0] + offset[0], this.dragStart[1] + offset[1] ];
+                            let droppedElement = dialog as HTMLElement;
+                            let newCss = Dialog.applyOffset( droppedElement.style.left, droppedElement.style.top, offset[0], offset[1] );
+                            droppedElement.style.left = newCss.left;
+                            droppedElement.style.top = newCss.top;
+                            console.log( "Drop " + ( dialog as HTMLElement ).getAttribute("id") );
+                        } else {
+                            console.log( "Ignore drop of " + titleBar.id );
+                        }
                     }.bind(this));
                 }
             }

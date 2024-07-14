@@ -885,28 +885,33 @@ var ElevenDotJs;
             if (dialog) {
                 let dropArea = dialog.parentNode;
                 if (dropArea) {
-                    titleBar.addEventListener("dragstart", function dropHandler(ev) {
+                    titleBar.addEventListener("dragstart", function (ev) {
                         let de = ev;
                         let me = ev;
                         this.dragStart = [me.clientX, me.clientY];
                         de.dataTransfer.setData("text/plain", "What a drag.");
+                        console.log("Drag Start for " + dialog.getAttribute("id"));
+                        Dialog.idOfDraggingDialog = titleBar.id;
                     }.bind(this));
                     // Add drop events to the dropArea (body)
-                    dropArea.addEventListener('dragover', (event) => {
-                        event.preventDefault(); // allow dropping
-                    });
-                    dropArea.addEventListener("drop", function dropHandler(ev) {
-                        let me = ev;
-                        let offset = [me.clientX - this.dragStart[0], me.clientY - this.dragStart[1]];
-                        this.dragStart = [this.dragStart[0] + offset[0], this.dragStart[1] + offset[1]];
-                        let droppedElement = dialog;
-                        let newCss = Dialog.applyOffset(droppedElement.style.left, droppedElement.style.top, offset[0], offset[1]);
-                        droppedElement.style.left = newCss.left;
-                        droppedElement.style.top = newCss.top;
-                        //droppedElement.style.transform = `translate(${offset[0]}px, ${offset[1]}px)`; // meta.ai!
-                        //droppedElement.style.left = `${de.x}px`;
-                        //droppedElement.style.top = `${de.y}px`;
-                        let stop = 1; //droppedElement.style.left = "";
+                    dropArea.addEventListener('dragover', function (ev) {
+                        ev.preventDefault(); // allow dropping
+                        //console.log( "Dragging " + ( dialog as HTMLElement ).getAttribute("id") );
+                    }.bind(this));
+                    dropArea.addEventListener("drop", function (ev) {
+                        if (titleBar.id == Dialog.idOfDraggingDialog) {
+                            let me = ev;
+                            let offset = [me.clientX - this.dragStart[0], me.clientY - this.dragStart[1]];
+                            this.dragStart = [this.dragStart[0] + offset[0], this.dragStart[1] + offset[1]];
+                            let droppedElement = dialog;
+                            let newCss = Dialog.applyOffset(droppedElement.style.left, droppedElement.style.top, offset[0], offset[1]);
+                            droppedElement.style.left = newCss.left;
+                            droppedElement.style.top = newCss.top;
+                            console.log("Drop " + dialog.getAttribute("id"));
+                        }
+                        else {
+                            console.log("Ignore drop of " + titleBar.id);
+                        }
                     }.bind(this));
                 }
             }
