@@ -66,7 +66,7 @@ namespace ElevenDotJs {
                     case "number":
                     case "boolean":
                         // set an attribute of the current document node
-                        ( doc as Element ).setAttribute( key, String( value ) );
+                        doc[ key ] = value;
                         break;
                     }
                     let stop = 1;

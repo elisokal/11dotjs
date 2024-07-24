@@ -8,15 +8,13 @@
     // The ColorPalette calls our callback function when the user selects a color.
     function demo( color ) {
         const span = document.getElementById('filler');
-        span.style.color=color.css;
-        let stop = 1;
+        span.style.color = color.css;
     }
-    var colorPalette2; // To demonstrate second instance
 </script>
 <!--                                               This is the callback function. -->
-<body onload="ElevenDotJs.colorPalette.open( new RGB(0,220,0), ( color ) => { demo( color ); } )">
+<body onload="new ElevenDotJs.ColorPalette( new RGB(0,220,0), ( color ) => { demo( color ); }, 'colorPalette1' )">
     <button 
-        onclick="colorPalette2 = new ElevenDotJs.ColorPalette(); colorPalette2.open( new RGB(220,0,0), ( color ) => { demo( color ); }, 'colorPalette2' )"
+        onclick="colorPalette2 = new ElevenDotJs.ColorPalette( new RGB(220,0,0), ( color ) => { demo( color ); }, 'colorPalette2' )"
     >
         Add Instance Two
     </button>

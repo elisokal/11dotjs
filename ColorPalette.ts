@@ -6,35 +6,39 @@ namespace ElevenDotJs {
 		private static rgbCanvasFill = null;
 		private callback: Function;
 		// To setup oninput events, we need the name of the ColorPalette object
-		private varName: string;
+		private componentId: string;
 
-		public open( color: RGB, callback: Function, varName?: string ) {
+		public constructor( color: RGB, callback: Function, componentId: string ) {
 			this.callback = callback;
-			this.varName = varName;
-			if( !this.varName ) {
-				this.varName = "ElevenDotJs.colorPalette";
+			this.componentId = componentId;
+			if( !this.componentId ) {
+				this.componentId = "ElevenDotJs.colorPalette";
 			}
 
 			let canvas = this.getTheRenderCanvas();
 			if( !canvas ) {
-				let title = "Intuitive Color Palette";
-				let dialogId = this.varName + "_colorPaletteDialog";
-				let clientAreaId = this.varName + "_dialogClientArea";
-				let dialog = new Dialog(
-					new DialogConfig( document.body, 
-						title, 
-						dialogId, 
-						clientAreaId, 
-						DialogPosition.center 
-					) 
-				);
+				let clientAreaId = this.componentId + "_dialogClientArea";
+				let dialog = new Dialog( { 
+					"modal": true,
+					"parent": document.body,
+					"title": "Intuitive Color Palette",
+					"dialogId": this.componentId + "_colorPaletteDialog",
+					"clientAreaId": clientAreaId,
+					"position": DialogPosition.center
+				});
 				this.createUi( document.getElementById( clientAreaId ) );
 				canvas = this.getTheRenderCanvas();
 				this.configure(canvas);
+				// Positioning depends on dimensions, so we must call 
+				// setPosition *after* the client content is added.
 				dialog.setPosition();
 			}
 			
 			this.setColor( ( color ) ? color : new RGB( 128,0,0 ), true );
+
+			// create our variable in the global namespace
+			window[ this.componentId ] = this;
+
 			if( false ) {
 				// WebGL test!
 				initWebGl();
@@ -46,12 +50,12 @@ namespace ElevenDotJs {
 			
 			let ui = {
 				"input": {
-					"id": this.varName + "_luminance", 
+					"id": this.componentId + "_luminance", 
 					"type": "range", 
 					"min": "0", 
 					"max": "1", 
 					"step": "0.01",
-					"oninput": this.varName + ".renderLuminance()",
+					"oninput": this.componentId + ".renderLuminance()",
 					"style": "width: 100%; cursor: pointer",
 					"title": "Luminance 0..100%"
 				},
@@ -62,7 +66,7 @@ namespace ElevenDotJs {
 								"td": [
 									{
 										"canvas": { 
-											"id": this.varName + "_rgbCanvas",
+											"id": this.componentId + "_rgbCanvas",
 											"width": 512,
 											"height": 512,
 											"style": "cursor: crosshair"
@@ -70,7 +74,7 @@ namespace ElevenDotJs {
 									},
 									{
 										"canvas": { 
-											"id": this.varName + "_colorSample",
+											"id": this.componentId + "_colorSample",
 											"width": 64,
 											"height": 512,
 											"style": "border: 1px solid RGB(220,220,220);"
@@ -80,29 +84,29 @@ namespace ElevenDotJs {
 										"style": "width:64px; vertical-align: top",
 										"input_r" : {
 											"type" : "number",
-											"style": "color:red; font-family: consolas",
-											"id": this.varName + "_redByte",
+											"style": `color:red; font-family: ${ElevenDotJs.defaultFont};`,
+											"id": this.componentId + "_redByte",
 											min: 0,
 											max: 255,
-											"oninput": this.varName + ".onByteTextUpdate();"
+											"oninput": this.componentId + ".onByteTextUpdate();"
 										},
 										"br_1": null,
 										"input_g" : {
 											"type" : "number",
-											"style": "color:green; font-family: consolas",
-											"id": this.varName + "_greenByte",
+											"style": `color:green; font-family: ${ElevenDotJs.defaultFont};`,
+											"id": this.componentId + "_greenByte",
 											min: 0,
 											max: 255,
-											"oninput": this.varName + ".onByteTextUpdate();"
+											"oninput": this.componentId + ".onByteTextUpdate();"
 										},
 										"br_2": null,
 										"input_b" : {
 											"type" : "number",
-											"style": "color:blue; font-family: consolas",
-											"id": this.varName + "_blueByte",
+											"style": `color:blue; font-family: ${ElevenDotJs.defaultFont};`,
+											"id": this.componentId + "_blueByte",
 											min: 0,
 											max: 255,
-											"oninput": this.varName + ".onByteTextUpdate();"
+											"oninput": this.componentId + ".onByteTextUpdate();"
 										},
 										"br_3": null,
 									}
@@ -131,7 +135,7 @@ namespace ElevenDotJs {
 		}
 
 		private  getTheRenderCanvas(): HTMLCanvasElement {
-			return document.getElementById( this.varName + "_rgbCanvas") as HTMLCanvasElement | null;
+			return document.getElementById( this.componentId + "_rgbCanvas") as HTMLCanvasElement | null;
 		}	
 
 		private renderLuminance() {
@@ -145,7 +149,7 @@ namespace ElevenDotJs {
 		}
 
 		private getTheLuminanceSlider(): HTMLInputElement {
-			return ( document.getElementById( this.varName + "_luminance") as HTMLInputElement );
+			return ( document.getElementById( this.componentId + "_luminance") as HTMLInputElement );
 		}
 
 		private renderPalette( luminance: number ) {
@@ -189,7 +193,7 @@ namespace ElevenDotJs {
 					let sy = canvas.height / palette.height;
 					let palette2 = VisImage.fromImageData( palette ).cropImageToContent();
 					let palette3 = palette2.scale(canvas.width, canvas.height);
-					ctx.font = "1em consolas";
+					ctx.font = `1em ${ElevenDotJs.defaultFont}`;
 					ctx.putImageData(palette3.getImageData(), 0, 0);
 					this.showLuminanceLabel( ctx, luminance );
 					let stop = true;
@@ -222,7 +226,7 @@ namespace ElevenDotJs {
 		}
 
 		private  getTheColorSampleCanvas(): HTMLCanvasElement {
-			return document.getElementById( this.varName + "_colorSample") as HTMLCanvasElement | null;
+			return document.getElementById( this.componentId + "_colorSample") as HTMLCanvasElement | null;
 		}
 
 		// private  to handle mouse click events
@@ -266,9 +270,9 @@ namespace ElevenDotJs {
 
 		}
 		private showRgbBytes( color: RGB ) {
-			( document.getElementById(this.varName + "_redByte") as HTMLInputElement ).value = color.r.toString();
-			( document.getElementById(this.varName + "_greenByte") as HTMLInputElement ).value = color.g.toString();
-			( document.getElementById(this.varName + "_blueByte") as HTMLInputElement ).value = color.b.toString();
+			( document.getElementById(this.componentId + "_redByte") as HTMLInputElement ).value = color.r.toString();
+			( document.getElementById(this.componentId + "_greenByte") as HTMLInputElement ).value = color.g.toString();
+			( document.getElementById(this.componentId + "_blueByte") as HTMLInputElement ).value = color.b.toString();
 		}
 		private syncLuminanceSlider( color: RGB ) {
 			let input = this.getTheLuminanceSlider();
@@ -309,9 +313,9 @@ namespace ElevenDotJs {
 
 		public onByteTextUpdate() {
 			const color = new RGB(
-				this.harvestRgbByte ( document.getElementById(this.varName + "_redByte") as HTMLInputElement ),
-				this.harvestRgbByte ( document.getElementById(this.varName + "_greenByte") as HTMLInputElement),
-				this.harvestRgbByte ( document.getElementById(this.varName + "_blueByte") as HTMLInputElement)
+				this.harvestRgbByte ( document.getElementById(this.componentId + "_redByte") as HTMLInputElement ),
+				this.harvestRgbByte ( document.getElementById(this.componentId + "_greenByte") as HTMLInputElement),
+				this.harvestRgbByte ( document.getElementById(this.componentId + "_blueByte") as HTMLInputElement)
 			);
 			this.setColor( color, false );
 		}
@@ -337,6 +341,6 @@ namespace ElevenDotJs {
 			}
 		}		
 	}
-	export var colorPalette = new ColorPalette();
+	//export var colorPalette = new ColorPalette();
 }
 

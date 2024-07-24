@@ -740,7 +740,7 @@ var ElevenDotJs;
                         case "number":
                         case "boolean":
                             // set an attribute of the current document node
-                            doc.setAttribute(key, String(value));
+                            doc[key] = value;
                             break;
                     }
                     let stop = 1;
@@ -800,12 +800,14 @@ var ElevenDotJs;
 })(ElevenDotJs || (ElevenDotJs = {}));
 var ElevenDotJs;
 (function (ElevenDotJs) {
+    ElevenDotJs.defaultFont = "consolas";
     let DialogPosition;
     (function (DialogPosition) {
         DialogPosition[DialogPosition["center"] = 1] = "center";
     })(DialogPosition = ElevenDotJs.DialogPosition || (ElevenDotJs.DialogPosition = {}));
     class DialogConfig {
-        constructor(parent, title, dialogId, clientAreaId, position) {
+        constructor(modal, parent, title, dialogId, clientAreaId, position) {
+            this.modal = modal;
             this.parent = parent;
             this.title = title;
             this.dialogId = dialogId;
@@ -821,10 +823,11 @@ var ElevenDotJs;
             this.createUi();
         }
         createUi() {
+            const zIndex = 999;
             let ui = {
                 "div": {
                     "id": this.config.dialogId,
-                    "style": "position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: 99; "
+                    "style": `position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: ${zIndex}; `
                         + "min-width: 256px; min-height: 256px; background-color: white; padding:0",
                     "table": {
                         //"style": "width: 100%",
@@ -834,14 +837,14 @@ var ElevenDotJs;
                                     "td": [
                                         {
                                             "text": this.config.title,
-                                            "style": "text-align: center; font-family: consolas; font-size: 1.2em; cursor: move",
+                                            "style": `text-align: center; font-family: ${ElevenDotJs.defaultFont}; font-size: 1.2em; cursor: move`,
                                             "draggable": true,
                                             "id": this.config.dialogId + "-titleBar"
                                         },
                                         {
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
-                                            "onclick": `ElevenDotJs.Dialog.detachElement('${this.config.dialogId}');`,
+                                            "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
                                             "title": "close me"
                                         }
                                     ]
@@ -857,7 +860,22 @@ var ElevenDotJs;
                     }
                 }
             };
-            const ret = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            let ret = null;
+            if (this.config.modal) {
+                // add the overlay to block user interaction with all page content
+                // except for our dialog
+                let overlay = {
+                    "div": {
+                        "id": this.config.dialogId + "_overlay",
+                        "style": `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: ${zIndex - 1};`
+                    }
+                };
+                let overlayNode = ElevenDotJs.DocComposer.compose(overlay, this.config.parent);
+                ret = ElevenDotJs.DocComposer.compose(ui, overlayNode);
+            }
+            else {
+                ret = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            }
             this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
             return ret;
         }
@@ -916,6 +934,10 @@ var ElevenDotJs;
                 }
             }
         }
+        static close(dialogId) {
+            ElevenDotJs.Dialog.detachElement(dialogId);
+            ElevenDotJs.Dialog.detachElement(dialogId + "_overlay");
+        }
         static detachElement(id) {
             let el = document.getElementById(id);
             if (el) {
@@ -942,29 +964,36 @@ var ElevenDotJs;
 var ElevenDotJs;
 (function (ElevenDotJs) {
     class ColorPalette {
-        constructor() {
+        constructor(color, callback, componentId) {
             this.imageCache = new Map();
             this.markerLocation = null;
             this.clickedLocation = null;
-        }
-        open(color, callback, varName) {
             this.callback = callback;
-            this.varName = varName;
-            if (!this.varName) {
-                this.varName = "ElevenDotJs.colorPalette";
+            this.componentId = componentId;
+            if (!this.componentId) {
+                this.componentId = "ElevenDotJs.colorPalette";
             }
             let canvas = this.getTheRenderCanvas();
             if (!canvas) {
-                let title = "Intuitive Color Palette";
-                let dialogId = this.varName + "_colorPaletteDialog";
-                let clientAreaId = this.varName + "_dialogClientArea";
-                let dialog = new ElevenDotJs.Dialog(new ElevenDotJs.DialogConfig(document.body, title, dialogId, clientAreaId, ElevenDotJs.DialogPosition.center));
+                let clientAreaId = this.componentId + "_dialogClientArea";
+                let dialog = new ElevenDotJs.Dialog({
+                    "modal": true,
+                    "parent": document.body,
+                    "title": "Intuitive Color Palette",
+                    "dialogId": this.componentId + "_colorPaletteDialog",
+                    "clientAreaId": clientAreaId,
+                    "position": ElevenDotJs.DialogPosition.center
+                });
                 this.createUi(document.getElementById(clientAreaId));
                 canvas = this.getTheRenderCanvas();
                 this.configure(canvas);
+                // Positioning depends on dimensions, so we must call 
+                // setPosition *after* the client content is added.
                 dialog.setPosition();
             }
             this.setColor((color) ? color : new RGB(128, 0, 0), true);
+            // create our variable in the global namespace
+            window[this.componentId] = this;
             if (false) {
                 // WebGL test!
                 initWebGl();
@@ -974,12 +1003,12 @@ var ElevenDotJs;
         createUi(parent) {
             let ui = {
                 "input": {
-                    "id": this.varName + "_luminance",
+                    "id": this.componentId + "_luminance",
                     "type": "range",
                     "min": "0",
                     "max": "1",
                     "step": "0.01",
-                    "oninput": this.varName + ".renderLuminance()",
+                    "oninput": this.componentId + ".renderLuminance()",
                     "style": "width: 100%; cursor: pointer",
                     "title": "Luminance 0..100%"
                 },
@@ -990,7 +1019,7 @@ var ElevenDotJs;
                                 "td": [
                                     {
                                         "canvas": {
-                                            "id": this.varName + "_rgbCanvas",
+                                            "id": this.componentId + "_rgbCanvas",
                                             "width": 512,
                                             "height": 512,
                                             "style": "cursor: crosshair"
@@ -998,7 +1027,7 @@ var ElevenDotJs;
                                     },
                                     {
                                         "canvas": {
-                                            "id": this.varName + "_colorSample",
+                                            "id": this.componentId + "_colorSample",
                                             "width": 64,
                                             "height": 512,
                                             "style": "border: 1px solid RGB(220,220,220);"
@@ -1008,29 +1037,29 @@ var ElevenDotJs;
                                         "style": "width:64px; vertical-align: top",
                                         "input_r": {
                                             "type": "number",
-                                            "style": "color:red; font-family: consolas",
-                                            "id": this.varName + "_redByte",
+                                            "style": `color:red; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "id": this.componentId + "_redByte",
                                             min: 0,
                                             max: 255,
-                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                            "oninput": this.componentId + ".onByteTextUpdate();"
                                         },
                                         "br_1": null,
                                         "input_g": {
                                             "type": "number",
-                                            "style": "color:green; font-family: consolas",
-                                            "id": this.varName + "_greenByte",
+                                            "style": `color:green; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "id": this.componentId + "_greenByte",
                                             min: 0,
                                             max: 255,
-                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                            "oninput": this.componentId + ".onByteTextUpdate();"
                                         },
                                         "br_2": null,
                                         "input_b": {
                                             "type": "number",
-                                            "style": "color:blue; font-family: consolas",
-                                            "id": this.varName + "_blueByte",
+                                            "style": `color:blue; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "id": this.componentId + "_blueByte",
                                             min: 0,
                                             max: 255,
-                                            "oninput": this.varName + ".onByteTextUpdate();"
+                                            "oninput": this.componentId + ".onByteTextUpdate();"
                                         },
                                         "br_3": null,
                                     }
@@ -1057,7 +1086,7 @@ var ElevenDotJs;
             canvas.addEventListener('click', this.handleMouseClick.bind(this));
         }
         getTheRenderCanvas() {
-            return document.getElementById(this.varName + "_rgbCanvas");
+            return document.getElementById(this.componentId + "_rgbCanvas");
         }
         renderLuminance() {
             let el = this.getTheLuminanceSlider();
@@ -1069,7 +1098,7 @@ var ElevenDotJs;
             }
         }
         getTheLuminanceSlider() {
-            return document.getElementById(this.varName + "_luminance");
+            return document.getElementById(this.componentId + "_luminance");
         }
         renderPalette(luminance) {
             let key = this.luminanceKey(luminance);
@@ -1110,7 +1139,7 @@ var ElevenDotJs;
                     let sy = canvas.height / palette.height;
                     let palette2 = VisImage.fromImageData(palette).cropImageToContent();
                     let palette3 = palette2.scale(canvas.width, canvas.height);
-                    ctx.font = "1em consolas";
+                    ctx.font = `1em ${ElevenDotJs.defaultFont}`;
                     ctx.putImageData(palette3.getImageData(), 0, 0);
                     this.showLuminanceLabel(ctx, luminance);
                     let stop = true;
@@ -1140,7 +1169,7 @@ var ElevenDotJs;
             this.markerLocation = null;
         }
         getTheColorSampleCanvas() {
-            return document.getElementById(this.varName + "_colorSample");
+            return document.getElementById(this.componentId + "_colorSample");
         }
         // private  to handle mouse click events
         handleMouseClick(event) {
@@ -1181,9 +1210,9 @@ var ElevenDotJs;
             }
         }
         showRgbBytes(color) {
-            document.getElementById(this.varName + "_redByte").value = color.r.toString();
-            document.getElementById(this.varName + "_greenByte").value = color.g.toString();
-            document.getElementById(this.varName + "_blueByte").value = color.b.toString();
+            document.getElementById(this.componentId + "_redByte").value = color.r.toString();
+            document.getElementById(this.componentId + "_greenByte").value = color.g.toString();
+            document.getElementById(this.componentId + "_blueByte").value = color.b.toString();
         }
         syncLuminanceSlider(color) {
             let input = this.getTheLuminanceSlider();
@@ -1222,7 +1251,7 @@ var ElevenDotJs;
             }
         }
         onByteTextUpdate() {
-            const color = new RGB(this.harvestRgbByte(document.getElementById(this.varName + "_redByte")), this.harvestRgbByte(document.getElementById(this.varName + "_greenByte")), this.harvestRgbByte(document.getElementById(this.varName + "_blueByte")));
+            const color = new RGB(this.harvestRgbByte(document.getElementById(this.componentId + "_redByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_greenByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_blueByte")));
             this.setColor(color, false);
         }
         harvestRgbByte(input) {
@@ -1246,7 +1275,7 @@ var ElevenDotJs;
     }
     ColorPalette.rgbCanvasFill = null;
     ElevenDotJs.ColorPalette = ColorPalette;
-    ElevenDotJs.colorPalette = new ColorPalette();
+    //export var colorPalette = new ColorPalette();
 })(ElevenDotJs || (ElevenDotJs = {}));
 /* Generated from Java with JSweet 3.1.0 - http://www.jsweet.org */
 var Axis;
@@ -2045,16 +2074,21 @@ var ElevenDotJs;
 (function (ElevenDotJs) {
     let ObjectStorageOperation;
     (function (ObjectStorageOperation) {
-        ObjectStorageOperation[ObjectStorageOperation["readFile"] = 1] = "readFile";
-        ObjectStorageOperation[ObjectStorageOperation["readFiles"] = 2] = "readFiles";
-        ObjectStorageOperation[ObjectStorageOperation["writeFile"] = 3] = "writeFile";
+        ObjectStorageOperation[ObjectStorageOperation["read"] = 1] = "read";
+        ObjectStorageOperation[ObjectStorageOperation["write"] = 2] = "write";
     })(ObjectStorageOperation = ElevenDotJs.ObjectStorageOperation || (ElevenDotJs.ObjectStorageOperation = {}));
+    class ObjectStorageMetadata {
+    }
+    ElevenDotJs.ObjectStorageMetadata = ObjectStorageMetadata;
     class ObjectStorageConfig {
     }
     ElevenDotJs.ObjectStorageConfig = ObjectStorageConfig;
     class ObjectStorage {
-        constructor(config) {
+        constructor(config, componentId, writePayload) {
+            this.readPayload = null;
+            this.writePayload = writePayload;
             this.config = config;
+            this.componentId = componentId;
             this.createUi();
         }
         createUi() {
@@ -2062,35 +2096,91 @@ var ElevenDotJs;
                 "label": {
                     "text": this.config.label,
                     "input": {
+                        "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
-                        "multiple": this.config.multiple,
+                        "multiple": this.config.multiple
                     }
                 }
             };
-            const el = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
-            el.addEventListener("input", this.inputHandler());
+            ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            this.inputElement().addEventListener("input", this.inputHandler());
+        }
+        inputElementId() {
+            return this.componentId + "_input";
+        }
+        inputElement() {
+            return document.getElementById(this.inputElementId());
         }
         inputHandler() {
             switch (this.config.operation) {
-                case ObjectStorageOperation.readFile:
-                    return function (ev) { alert("readFile " + ev.target); };
+                case ObjectStorageOperation.read:
+                    return function (ev) { this.readFile(ev); }.bind(this);
                     break;
-                case ObjectStorageOperation.readFiles:
-                    return function (ev) { alert("readFiles " + ev.target); };
-                    break;
-                case ObjectStorageOperation.writeFile:
-                    return function (ev) { alert("writeFile " + ev.target); };
+                case ObjectStorageOperation.write:
+                    return function (ev) { this.writeFile(ev); }.bind(this);
                     break;
             }
         }
-        saveToFile(obj) {
-            let json = JSON.stringify(obj);
-            const file = new File([json], "temp", null);
-            let input = document.createElement("input");
-            input.type = "file";
-            input.click();
+        //
+        // Read zero or more files and return an array of JS objects. Also
+        // save the payload(s) in this.readPayload
+        // GPT 2024-07-20 gave me the use of Promise to simulate blocking read.
+        async readFile(ev) {
+            const ret = [];
+            let files = ev.target.files;
+            const readAsText = (file) => {
+                return new Promise((resolve, reject) => {
+                    let reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsText(file);
+                });
+            };
+            const fileReaders = [];
+            for (let i = 0; i < files.length; i++) {
+                fileReaders.push(readAsText(files[i]).then((text) => {
+                    ret.push(JSON.parse(text));
+                }).catch((error) => {
+                    console.error("Error reading file:", error);
+                }));
+            }
+            // Await the Promise.all to ensure it's blocking and then assign the resolved ret array to this.readPayload
+            await Promise.all(fileReaders);
+            // Update the instance member after reading all files
+            this.readPayload = ret;
+            // Call the callback with the result
+            if (this.config.callback) {
+                this.config.callback(this.readPayload);
+            }
+        }
+        // Called after user chooses an output file path using an <input type="file"/>
+        async writeFile(ev) {
+            let json = JSON.stringify(this.writePayload);
+            let file = ev.target.files[0];
+            try {
+                // Create a new blob with the JSON data
+                let blob = new Blob([json], { type: 'application/json' });
+                // Create a link element
+                let link = document.createElement('a');
+                // Create a URL for the blob and set it as the href attribute
+                link.href = URL.createObjectURL(blob);
+                // Set the download attribute with the original file name
+                link.download = file.name;
+                // Append the link to the body (necessary for Firefox)
+                document.body.appendChild(link);
+                // Programmatically click the link to trigger the download
+                link.click();
+                // Clean up the URL object
+                URL.revokeObjectURL(link.href);
+                // Remove the link from the document
+                document.body.removeChild(link);
+                console.log("File written successfully");
+            }
+            catch (error) {
+                console.error("Error writing file:", error);
+            }
         }
     }
     ElevenDotJs.ObjectStorage = ObjectStorage;
