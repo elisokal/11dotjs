@@ -1,5 +1,6 @@
 sources="VisImage.ts
 Rgb.ts
+Tables.ts
 DocComposer.ts
 Dialog.ts
 ColorPalette.ts
