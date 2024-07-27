@@ -65,7 +65,8 @@ namespace ElevenDotJs {
                         break;
                     case "number":
                     case "boolean":
-                        // set an attribute of the current document node
+                    case "function":
+                            // set an attribute of the current document node
                         doc[ key ] = value;
                         break;
                     }

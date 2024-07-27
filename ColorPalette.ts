@@ -8,6 +8,8 @@ namespace ElevenDotJs {
 		// To setup oninput events, we need the name of the ColorPalette object
 		private componentId: string;
 
+		private objectStorage: ElevenDotJs.ObjectStorage;
+
 		public constructor( color: RGB, callback: Function, componentId: string ) {
 			this.callback = callback;
 			this.componentId = componentId;
@@ -19,7 +21,7 @@ namespace ElevenDotJs {
 			if( !canvas ) {
 				let clientAreaId = this.componentId + "_dialogClientArea";
 				let dialog = new Dialog( { 
-					"modal": true,
+					"modal": false,
 					"parent": document.body,
 					"title": "Intuitive Color Palette",
 					"dialogId": this.componentId + "_colorPaletteDialog",
@@ -34,10 +36,30 @@ namespace ElevenDotJs {
 				dialog.setPosition();
 			}
 			
+			// This experiment adds a button that lets the user save the palette image as JSON.
+			// The file size was 11.2MB. Obv we won't be saving a lot of rasters as JSON
+			if( false ) {
+				let controlsParent = document.getElementById( this.componentId + "_controls_parent" ) ;
+				if( controlsParent ) {
+					// Add an experimental button to save the image
+					this.objectStorage = new ElevenDotJs.ObjectStorage( 
+						{ 
+							"operation": ElevenDotJs.ObjectStorageOperation.write, 
+							"parent": controlsParent,
+							"label": "Click here to save the image: ",
+							"callback": ( payload ) => { console.log( `Write ${payload}` ); }
+						}, 
+						this.componentId + "_objectStorage"
+					);            
+		
+				}
+			}	
+
 			this.setColor( ( color ) ? color : new RGB( 128,0,0 ), true );
 
 			// create our variable in the global namespace
 			window[ this.componentId ] = this;
+
 
 			if( false ) {
 				// WebGL test!
@@ -109,6 +131,10 @@ namespace ElevenDotJs {
 											"oninput": this.componentId + ".onByteTextUpdate();"
 										},
 										"br_3": null,
+										"span": {
+											"id" : this.componentId + "_controls_parent" //,
+											//"onclick": () => { ElevenDotJs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
+										}
 									}
 								]
 							}
@@ -196,7 +222,9 @@ namespace ElevenDotJs {
 					ctx.font = `1em ${ElevenDotJs.defaultFont}`;
 					ctx.putImageData(palette3.getImageData(), 0, 0);
 					this.showLuminanceLabel( ctx, luminance );
-					let stop = true;
+					if( this.objectStorage ) {
+						this.objectStorage.setPayload( palette3.getImageData() );
+					}
 				}
 			}
 		}

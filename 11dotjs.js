@@ -739,6 +739,7 @@ var ElevenDotJs;
                             break;
                         case "number":
                         case "boolean":
+                        case "function":
                             // set an attribute of the current document node
                             doc[key] = value;
                             break;
@@ -977,7 +978,7 @@ var ElevenDotJs;
             if (!canvas) {
                 let clientAreaId = this.componentId + "_dialogClientArea";
                 let dialog = new ElevenDotJs.Dialog({
-                    "modal": true,
+                    "modal": false,
                     "parent": document.body,
                     "title": "Intuitive Color Palette",
                     "dialogId": this.componentId + "_colorPaletteDialog",
@@ -990,6 +991,20 @@ var ElevenDotJs;
                 // Positioning depends on dimensions, so we must call 
                 // setPosition *after* the client content is added.
                 dialog.setPosition();
+            }
+            // This experiment adds a button that lets the user save the palette image as JSON.
+            // The file size was 11.2MB. Obv we won't be saving a lot of rasters as JSON
+            if (false) {
+                let controlsParent = document.getElementById(this.componentId + "_controls_parent");
+                if (controlsParent) {
+                    // Add an experimental button to save the image
+                    this.objectStorage = new ElevenDotJs.ObjectStorage({
+                        "operation": ElevenDotJs.ObjectStorageOperation.write,
+                        "parent": controlsParent,
+                        "label": "Click here to save the image: ",
+                        "callback": (payload) => { console.log(`Write ${payload}`); }
+                    }, this.componentId + "_objectStorage");
+                }
             }
             this.setColor((color) ? color : new RGB(128, 0, 0), true);
             // create our variable in the global namespace
@@ -1062,6 +1077,10 @@ var ElevenDotJs;
                                             "oninput": this.componentId + ".onByteTextUpdate();"
                                         },
                                         "br_3": null,
+                                        "span": {
+                                            "id": this.componentId + "_controls_parent" //,
+                                            //"onclick": () => { ElevenDotJs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
+                                        }
                                     }
                                 ]
                             }
@@ -1142,7 +1161,9 @@ var ElevenDotJs;
                     ctx.font = `1em ${ElevenDotJs.defaultFont}`;
                     ctx.putImageData(palette3.getImageData(), 0, 0);
                     this.showLuminanceLabel(ctx, luminance);
-                    let stop = true;
+                    if (this.objectStorage) {
+                        this.objectStorage.setPayload(palette3.getImageData());
+                    }
                 }
             }
         }
@@ -2095,12 +2116,14 @@ var ElevenDotJs;
             let ui = {
                 "label": {
                     "text": this.config.label,
+                    "style": `font-family: ${ElevenDotJs.defaultFont};`,
                     "input": {
                         "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
-                        "multiple": this.config.multiple
+                        "multiple": this.config.multiple,
+                        "style": `font-family: ${ElevenDotJs.defaultFont};`,
                     }
                 }
             };
@@ -2156,33 +2179,41 @@ var ElevenDotJs;
             }
         }
         // Called after user chooses an output file path using an <input type="file"/>
+        // Due to sandboxing, a download is as close as we can get to a true Save UX
         async writeFile(ev) {
-            let json = JSON.stringify(this.writePayload);
-            let file = ev.target.files[0];
-            try {
-                // Create a new blob with the JSON data
-                let blob = new Blob([json], { type: 'application/json' });
-                // Create a link element
-                let link = document.createElement('a');
-                // Create a URL for the blob and set it as the href attribute
-                link.href = URL.createObjectURL(blob);
-                // Set the download attribute with the original file name
-                link.download = file.name;
-                // Append the link to the body (necessary for Firefox)
-                document.body.appendChild(link);
-                // Programmatically click the link to trigger the download
-                link.click();
-                // Clean up the URL object
-                URL.revokeObjectURL(link.href);
-                // Remove the link from the document
-                document.body.removeChild(link);
-                console.log("File written successfully");
+            if (this.writePayload) {
+                let json = JSON.stringify(this.writePayload);
+                let file = ev.target.files[0];
+                try {
+                    // Create a new blob with the JSON data
+                    let blob = new Blob([json], { type: 'application/json' });
+                    // Create a link element
+                    let link = document.createElement('a');
+                    // Create a URL for the blob and set it as the href attribute
+                    link.href = URL.createObjectURL(blob);
+                    // Set the download attribute with the original file name
+                    link.download = file.name;
+                    // Append the link to the body (necessary for Firefox)
+                    document.body.appendChild(link);
+                    // Programmatically click the link to trigger the download
+                    link.click();
+                    // Clean up the URL object
+                    URL.revokeObjectURL(link.href);
+                    // Remove the link from the document
+                    document.body.removeChild(link);
+                    console.log("File written successfully");
+                }
+                catch (error) {
+                    console.error("Error writing file:", error);
+                }
             }
-            catch (error) {
-                console.error("Error writing file:", error);
+            else {
+                console.log("ElevenDotJs.ObjectStorage.writeFile: no payload!");
             }
+        }
+        setPayload(payload) {
+            this.writePayload = payload;
         }
     }
     ElevenDotJs.ObjectStorage = ObjectStorage;
-    //export var objectStorage = new ObjectStorage( null );
 })(ElevenDotJs || (ElevenDotJs = {}));

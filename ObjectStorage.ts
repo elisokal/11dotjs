@@ -13,10 +13,10 @@ namespace ElevenDotJs {
     export class ObjectStorageConfig {
         operation: ObjectStorageOperation;
         parent: Node;
-        accept: string;
-        multiple: boolean; // We can read multiple files for read operations.
+        accept?: string;
+        multiple?: boolean; // We can read multiple files for read operations.
         label: string;
-        tooltip: string;
+        tooltip?: string;
         callback: Function;
     }
 
@@ -38,12 +38,14 @@ namespace ElevenDotJs {
             let ui = {
                 "label": {
                     "text": this.config.label,
+                    "style": `font-family: ${ElevenDotJs.defaultFont};`,
                     "input": {
                         "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
-                        "multiple": this.config.multiple
+                        "multiple": this.config.multiple,
+                        "style": `font-family: ${ElevenDotJs.defaultFont};`,
                     }
                 }
             }
@@ -113,42 +115,48 @@ namespace ElevenDotJs {
         
         
         // Called after user chooses an output file path using an <input type="file"/>
+        // Due to sandboxing, a download is as close as we can get to a true Save UX
         private async writeFile(ev) {
-            let json = JSON.stringify(this.writePayload);
-            let file = ev.target.files[0];
+            if( this.writePayload ) {
+                let json = JSON.stringify(this.writePayload);
+                let file = ev.target.files[0];
 
-            try {
-                // Create a new blob with the JSON data
-                let blob = new Blob([json], { type: 'application/json' });
+                try {
+                    // Create a new blob with the JSON data
+                    let blob = new Blob([json], { type: 'application/json' });
 
-                // Create a link element
-                let link = document.createElement('a');
+                    // Create a link element
+                    let link = document.createElement('a');
 
-                // Create a URL for the blob and set it as the href attribute
-                link.href = URL.createObjectURL(blob);
+                    // Create a URL for the blob and set it as the href attribute
+                    link.href = URL.createObjectURL(blob);
 
-                // Set the download attribute with the original file name
-                link.download = file.name;
+                    // Set the download attribute with the original file name
+                    link.download = file.name;
 
-                // Append the link to the body (necessary for Firefox)
-                document.body.appendChild(link);
+                    // Append the link to the body (necessary for Firefox)
+                    document.body.appendChild(link);
 
-                // Programmatically click the link to trigger the download
-                link.click();
+                    // Programmatically click the link to trigger the download
+                    link.click();
 
-                // Clean up the URL object
-                URL.revokeObjectURL(link.href);
+                    // Clean up the URL object
+                    URL.revokeObjectURL(link.href);
 
-                // Remove the link from the document
-                document.body.removeChild(link);
+                    // Remove the link from the document
+                    document.body.removeChild(link);
 
-                console.log("File written successfully");
-            } catch (error) {
-                console.error("Error writing file:", error);
+                    console.log("File written successfully");
+                } catch (error) {
+                    console.error("Error writing file:", error);
+                }
+            } else {
+                console.log( "ElevenDotJs.ObjectStorage.writeFile: no payload!" );
             }
         }
 
+        public setPayload( payload: Object ) {
+            this.writePayload = payload;
+        }
     }
-
-    //export var objectStorage = new ObjectStorage( null );
-}    
+}
