@@ -3,13 +3,6 @@ namespace ElevenDotJs {
         read=1,
         write
     }
-
-    export class ObjectStorageMetadata {
-        // Unique data-type identifier useful to validate input files for a given use-case.
-        private graphType: string;
-        private writeDate: Date;
-    }
-
     export class ObjectStorageConfig {
         operation: ObjectStorageOperation;
         parent: Node;

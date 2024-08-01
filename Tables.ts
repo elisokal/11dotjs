@@ -1,37 +1,90 @@
 namespace ElevenDotJs {
+
+    export class TableConfig {
+        rowCount: number;
+        columnCount: number;
+        componentId?: string;
+        cellContent?: any[][];
+        cellStyle?: any[][];
+        columnStyle?: any[];
+        rowStyle?: any[];
+        hasHeader?: boolean = true;
+    }
     export class Tables {
-        public static generate( rowCount, columnCount, cellData: Object, cellStyle?: string ): Object {
-            const ret = { "table": {} };
-            for( let row = 0; row < rowCount; row++ ) {
-                if( !ret.table[ "tr" ] ) {
-                    ret.table [ "tr" ] = [];
+        public static defaultComponentId = "ElevenDotJs.Tables";
+        public static generate( config: TableConfig ): Object {
+            const componentId = ( config.componentId ) ? config.componentId : Tables.defaultComponentId;
+            const tbody = {};
+            const ret:any = { "table": { "tbody": tbody } };
+            let thead = null;
+            if( config.hasHeader ) {
+                thead = {};
+                ret.table.thead = thead;
+            }
+
+            for( let row = 0; row < config.rowCount; row++ ) {
+                let target = ( row == 0 && config.hasHeader ) ? thead : tbody;
+                if( !target.tr ) {
+                    target.tr = [];
                 }
-                ret.table [ "tr" ].push( [] );
-                for( let col = 0; col < columnCount; col++ ) {
-                    if( !ret.table[ "tr" ][ row ].td ) {
-                        ret.table[ "tr" ][ row ].td = [];
+                target.tr.push( [] );
+                for( let col = 0; col < config.columnCount; col++ ) {
+                    if( !target.tr[ row ].td ) {
+                        target.tr[ row ].td = [];
+                        target.tr[ row ].id = Tables.getRowElementId( componentId, row );
                     }
-                    ret.table[ "tr" ][ row ].td.push( {} );
-                    if( cellData ) {
-                        ret.table[ "tr" ][ row ].td[ col ] = cellData;
-                    }
-                    if( cellStyle ) {
-                        ret.table[ "tr" ][ row ].td[ col ].style = cellStyle;
-                    }
+                    target.tr[ row ].td.push( {} );
+                    target.tr[ row ].td[ col ] = Tables.lenient( config.cellContent, row, col );
+                    target.tr[ row ].td[ col ].style = Tables.lenient( config.cellStyle, row, col );
+                    target.tr[ row ].td[ col ].id = Tables.getCellElementId( componentId, row, col );
                 }
             }
             return ret;
         }
 
+        public static getRowElement( componentId: string, row: number ) {
+            return document.getElementById( Tables.getRowElementId( componentId, row ) );
+        }
+        public static getRowElementId( componentId: string, row: number ) {
+            return componentId + `_tr${row}`;
+        }
+        public static getCellElement( componentId: string, row: number, col: number ) {
+            return document.getElementById( Tables.getCellElementId( componentId, row, col ) );
+        }
+        public static getCellElementId( componentId: string, row: number, col: number ) {
+            return componentId + `_td${row}-${col}`;
+        }
+
+
+        // Lenient array access. Return what's there, or null
+        private static lenient( cellContent: any[][], row: number, col: number ) {
+            let ret = {};
+            if( cellContent && cellContent.length > 0 ) {
+                let rowCount = cellContent.length;
+                let rowIndex = Math.min( rowCount-1, row );
+                let columnCount = cellContent[ rowIndex ].length;
+                let columnIndex = Math.min( columnCount-1, col );
+                ret = cellContent[ rowIndex ][ columnIndex ];
+            }
+            return ret;
+        }
+
         public static demo() {
-            //const ui = Tables.generate( 4, 3, { "text": "demo" } );
-            const ui = Tables.generate( 
-                10, 
-                8, 
-                { "img": { "src": "http://www.shmetaverse.org/images/close.png" } },
-                "padding: 24px; background-color: gray;"
-            );
+            const ui = Tables.generate( {
+                //"componentId": "tables_demo",
+                "hasHeader": false,
+                "rowCount": 10, 
+                "columnCount": 8, 
+                "cellContent": [ [ { "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } } ] ],
+                "cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
+                //"cellStyle": [ [ { "padding": "24px", "backgroundColor": "RGB(242,251,50)" } ] ],
+            } );
             DocComposer.compose( ui, document.body );
+
+            // Retrieve a cell
+            let el = Tables.getCellElement(Tables.defaultComponentId, 0, 0 ) as HTMLElement;
+            let stop = 1;
+
         }
     }
 }

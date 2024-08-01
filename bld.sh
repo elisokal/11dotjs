@@ -8,4 +8,4 @@ VisPoint.ts
 learnWebGL/vertex.ts
 ObjectStorage.ts"
 
-tsc --outFile 11dotjs.js --lib es2018,dom --target es2018 $sources | tee compile.log
+tsc --outFile target/11dotjs.js --lib es2018,dom --target es2018 $sources | tee compile.log
