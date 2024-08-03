@@ -1,3 +1,15 @@
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    class NodeUtil {
+        static firstParent(node, tagName) {
+            do {
+                node = node.parentNode;
+            } while (node != null && node.tagName != tagName);
+            return node;
+        }
+    }
+    ElevenDotJs.NodeUtil = NodeUtil;
+})(ElevenDotJs || (ElevenDotJs = {}));
 class VisImage {
     constructor(width, height, data) {
         //super( width, height );
@@ -730,24 +742,48 @@ var ElevenDotJs;
                 let rowIndex = Math.min(rowCount - 1, row);
                 let columnCount = cellContent[rowIndex].length;
                 let columnIndex = Math.min(columnCount - 1, col);
-                ret = cellContent[rowIndex][columnIndex];
+                // If we do not clone here, table cells might share content inappropriately
+                ret = structuredClone(cellContent[rowIndex][columnIndex]);
             }
             return ret;
         }
         static demo() {
+            const componentId = "tables_demo";
             const ui = Tables.generate({
-                //"componentId": "tables_demo",
+                "componentId": componentId,
                 "hasHeader": false,
                 "rowCount": 10,
                 "columnCount": 8,
                 "cellContent": [[{ "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } }]],
                 "cellStyle": [["padding: 24px; background-color: RGB(242,251,50);"]]
-                //"cellStyle": [ [ { "padding": "24px", "backgroundColor": "RGB(242,251,50)" } ] ],
             });
             ElevenDotJs.DocComposer.compose(ui, document.body);
             // Retrieve a cell
-            let el = Tables.getCellElement(Tables.defaultComponentId, 0, 0);
-            let stop = 1;
+            let el = Tables.getCellElement(componentId, 0, 0);
+            //el.style.setProperty("background-color", "red" );
+            // now manipulate the table itself
+            let table = ElevenDotJs.NodeUtil.firstParent(el, "TABLE");
+            if (table) {
+                let tEl = table;
+                let angle = 45;
+                let css = `rotate(${angle}deg)`;
+                tEl.style.transform = css;
+                let stop = 1;
+                if (false) {
+                    ElevenDotJs.Animation.byDuration((timestamp) => {
+                        angle += 10;
+                        css = `rotate(${angle}deg)`;
+                        tEl.style.transform = css;
+                    }, 5000, 10);
+                }
+                if (true) {
+                    ElevenDotJs.Animation.byIterations((timestamp) => {
+                        angle += 10;
+                        css = `rotate(${angle}deg)`;
+                        tEl.style.transform = css;
+                    }, 50, 10);
+                }
+            }
         }
     }
     Tables.defaultComponentId = "ElevenDotJs.Tables";
@@ -1041,6 +1077,52 @@ var ElevenDotJs;
         }
     }
     ElevenDotJs.Dialog = Dialog;
+})(ElevenDotJs || (ElevenDotJs = {}));
+var ElevenDotJs;
+(function (ElevenDotJs) {
+    class Animation {
+        static byDuration(task, durationMs, fps) {
+            const start = performance.now();
+            const frameInterval = 1000 / fps; // Calculate the interval in milliseconds
+            let lastFrameTime = start;
+            function animationStep(now) {
+                const elapsed = now - start;
+                if (elapsed < durationMs) {
+                    if (now - lastFrameTime >= frameInterval) {
+                        task(now);
+                        lastFrameTime = now;
+                    }
+                    requestAnimationFrame(animationStep);
+                }
+                else {
+                    task(now);
+                    console.log("Animation completed");
+                }
+            }
+            requestAnimationFrame(animationStep);
+        }
+        static byIterations(task, iterations, fps) {
+            const frameInterval = 1000 / fps; // Calculate the interval in milliseconds
+            let count = 0;
+            let lastFrameTime = performance.now();
+            function animationStep(now) {
+                if (count < iterations) {
+                    if (now - lastFrameTime >= frameInterval) {
+                        task(now);
+                        lastFrameTime = now;
+                        count++;
+                    }
+                    requestAnimationFrame(animationStep);
+                }
+                else {
+                    task(now);
+                    console.log("Animation completed");
+                }
+            }
+            requestAnimationFrame(animationStep);
+        }
+    }
+    ElevenDotJs.Animation = Animation;
 })(ElevenDotJs || (ElevenDotJs = {}));
 var ElevenDotJs;
 (function (ElevenDotJs) {

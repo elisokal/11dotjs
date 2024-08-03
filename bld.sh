@@ -1,8 +1,10 @@
-sources="VisImage.ts
+sources="NodeUtil.ts
+VisImage.ts
 Rgb.ts
 Tables.ts
 DocComposer.ts
 Dialog.ts
+Animation.ts
 ColorPalette.ts
 VisPoint.ts
 learnWebGL/vertex.ts

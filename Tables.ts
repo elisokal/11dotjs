@@ -64,27 +64,50 @@ namespace ElevenDotJs {
                 let rowIndex = Math.min( rowCount-1, row );
                 let columnCount = cellContent[ rowIndex ].length;
                 let columnIndex = Math.min( columnCount-1, col );
-                ret = cellContent[ rowIndex ][ columnIndex ];
+                // If we do not clone here, table cells might share content inappropriately
+                ret = structuredClone( cellContent[ rowIndex ][ columnIndex ] );
             }
             return ret;
         }
 
         public static demo() {
+            const componentId = "tables_demo";
             const ui = Tables.generate( {
-                //"componentId": "tables_demo",
+                "componentId": componentId,
                 "hasHeader": false,
                 "rowCount": 10, 
                 "columnCount": 8, 
                 "cellContent": [ [ { "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } } ] ],
                 "cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
-                //"cellStyle": [ [ { "padding": "24px", "backgroundColor": "RGB(242,251,50)" } ] ],
             } );
             DocComposer.compose( ui, document.body );
 
             // Retrieve a cell
-            let el = Tables.getCellElement(Tables.defaultComponentId, 0, 0 ) as HTMLElement;
-            let stop = 1;
-
+            let el = Tables.getCellElement( componentId, 0, 0 ) as HTMLElement;
+            //el.style.setProperty("background-color", "red" );
+            // now manipulate the table itself
+            let table = NodeUtil.firstParent( el, "TABLE" );
+            if( table ) {
+                let tEl = table as HTMLElement;
+                let angle = 45;
+                let css = `rotate(${angle}deg)`;
+                tEl.style.transform = css;
+                let stop = 1;
+                if( false ) {
+                    Animation.byDuration( ( timestamp: DOMHighResTimeStamp )=>{
+                        angle += 10;
+                        css = `rotate(${angle}deg)`;
+                        tEl.style.transform = css;
+                    }, 5000, 10 );
+                }
+                if( true ) {
+                    Animation.byIterations( ( timestamp: DOMHighResTimeStamp )=>{
+                        angle += 10;
+                        css = `rotate(${angle}deg)`;
+                        tEl.style.transform = css;
+                    }, 50, 10 );
+                }
+            }
         }
     }
 }
