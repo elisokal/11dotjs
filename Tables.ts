@@ -71,14 +71,18 @@ namespace ElevenDotJs {
         }
 
         public static demo() {
+            
+            document.body.style.backgroundColor = "black";
+            
             const componentId = "tables_demo";
             const ui = Tables.generate( {
                 "componentId": componentId,
                 "hasHeader": false,
                 "rowCount": 10, 
-                "columnCount": 8, 
+                "columnCount": 12, 
                 "cellContent": [ [ { "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } } ] ],
-                "cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
+                //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
+                "cellStyle": [ [ "padding: 24px; background-color: RGB(0,0,0);" ] ]
             } );
             DocComposer.compose( ui, document.body );
 
@@ -89,23 +93,25 @@ namespace ElevenDotJs {
             let table = NodeUtil.firstParent( el, "TABLE" );
             if( table ) {
                 let tEl = table as HTMLElement;
+                tEl.style.margin = "auto";
                 let angle = 45;
+                let increment = 1;
                 let css = `rotate(${angle}deg)`;
                 tEl.style.transform = css;
                 let stop = 1;
-                if( false ) {
-                    Animation.byDuration( ( timestamp: DOMHighResTimeStamp )=>{
-                        angle += 10;
-                        css = `rotate(${angle}deg)`;
-                        tEl.style.transform = css;
-                    }, 5000, 10 );
-                }
                 if( true ) {
+                    Animation.byDuration( ( timestamp: DOMHighResTimeStamp )=>{
+                        angle += increment;
+                        css = `rotate3d(1,1,1,${angle}deg)`;
+                        tEl.style.transform = css;
+                    }, 30000, 60 );
+                }
+                if( false ) {
                     Animation.byIterations( ( timestamp: DOMHighResTimeStamp )=>{
-                        angle += 10;
+                        angle += increment;
                         css = `rotate(${angle}deg)`;
                         tEl.style.transform = css;
-                    }, 50, 10 );
+                    }, 150, 30 );
                 }
             }
         }
