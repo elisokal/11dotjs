@@ -8,6 +8,7 @@ Animation.ts
 ColorPalette.ts
 VisPoint.ts
 learnWebGL/vertex.ts
-ObjectStorage.ts"
+ObjectStorage.ts
+Demo.ts"
 
 tsc --outFile target/11dotjs.js --lib es2018,dom --target es2018 $sources | tee compile.log
