@@ -55,7 +55,6 @@ namespace ElevenDotJs {
             return componentId + `_td${row}-${col}`;
         }
 
-
         // Lenient array access. Return what's there, or null
         private static lenient( cellContent: any[][], row: number, col: number ) {
             let ret = {};
