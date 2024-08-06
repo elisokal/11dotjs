@@ -39,7 +39,7 @@ namespace ElevenDotJs {
             // Use a div for best scrolling UX
             DocComposer.compose( { 
                 "div" : {
-                    "style": "overflow: scroll; height: 40em; width: 80em; font: 0.9em consolas; padding: 2em;"
+                    "style": "overflow: scroll; height: 36em; width: 80em; font: 0.9em consolas; padding: 2em;"
                 }
             }, tdCode );
             let divCode = tdCode.firstChild;
@@ -130,7 +130,7 @@ namespace ElevenDotJs {
                 //document.body.style.backgroundColor = color.css;
                 let table: HTMLTableElement = NodeUtil.firstParent( Tables.getCellElement( Demo.componentId, 0, 0 ), "TABLE" ) as HTMLTableElement;
                 for( let td of Array.from( table.querySelectorAll( "td" ) ) ) {
-                    if( td.id ) {
+                    if( td.id && td.id.indexOf('1-1') < 0 ) {
                         td.style.border = `1em solid ${color.css}`
                     }
                 }
