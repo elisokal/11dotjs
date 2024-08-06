@@ -69,19 +69,20 @@ namespace ElevenDotJs {
 
         private static defaultGuiJson(): string {
             let o = { 
-                "div" : { 
-                    "style": "width:14em; overflow:hidden",
-                    "video" : {
-                        "type": "video/webm",
-                        "autoplay": true,
-                        "loop": true,
-                        "muted": true,
-                        "style": "height: 20em",
-                        "source": {
-                            "src": "http://shmeta.me/welcome_video.mp4",
-                            "type": "video/webm"
-                        },
-                        "text": "Sorry! Your browser does not support the video element"
+                "div" : {
+                    "style": "text-align: center; width: 40em",
+                    "p": {
+                        "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. You can edit the code in the left-hand panel and watch the preview update in real time!"
+                    },
+                    "iframe": {
+                        "width": 640,
+                        "height": 360,
+                        "src": "https://www.youtube.com/embed/ZrcVIwgysBE?si=HAlOtYElcWcMyB1f",
+                        "title": "YouTube video player",
+                        "frameborder": 0,
+                        "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+                        "referrerpolicy": "strict-origin-when-cross-origin",
+                        "allowfullscreen": true
                     }
                 }
             };
