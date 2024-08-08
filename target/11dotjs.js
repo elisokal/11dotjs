@@ -979,7 +979,8 @@ var ElevenDotJs;
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
                                             "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
-                                            "title": "close me"
+                                            "title": "close me",
+                                            "id": this.idOfCloseIcon()
                                         }
                                     ]
                                 },
@@ -1012,6 +1013,12 @@ var ElevenDotJs;
             }
             this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
             return ret;
+        }
+        idOfCloseIcon() {
+            return `${this.config.dialogId}_close_icon`;
+        }
+        closeIcon() {
+            return document.getElementById(this.idOfCloseIcon());
         }
         setPosition() {
             this.setPos(this.config.position);
@@ -2403,6 +2410,18 @@ var ElevenDotJs;
             td00.colSpan = 2;
             td00.nextSibling.remove();
             ElevenDotJs.DocComposer.compose({
+                "head": {
+                    "link": [
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
+                            "rel": "stylesheet"
+                        },
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
+                            "rel": "stylesheet"
+                        }
+                    ]
+                },
                 "table": {
                     "style": "width: 100%",
                     "tr": {
@@ -2425,8 +2444,6 @@ var ElevenDotJs;
             }, td00);
             // Create the code panel
             let tdCode = ElevenDotJs.Tables.getCellElement(Demo.componentId, 1, 0);
-            //tdCode.style.border = null;
-            //tdCode.style.padding = null;
             tdCode.innerHTML = null;
             // Use a div for best scrolling UX
             ElevenDotJs.DocComposer.compose({
@@ -2436,12 +2453,12 @@ var ElevenDotJs;
                         "id": Demo.idOfShowHtmlCheckBox(),
                         "type": "checkbox",
                         "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
-                    },
+                    }
                 },
                 "br": null,
                 "textarea": {
                     "id": Demo.componentId + "_textArea",
-                    "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
+                    "style": "margin-top: 0.5em; color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
                     "rows": 40,
                     "cols": 80,
                     "spellcheck": false,
@@ -2516,6 +2533,10 @@ var ElevenDotJs;
                 }
             }, parent);
             dialog.setPosition();
+            let closeIcon = dialog.closeIcon();
+            if (closeIcon) {
+                closeIcon.addEventListener("click", () => { this.showHtmlCheckBox().checked = false; });
+            }
         }
         static idOfHtmlDialog() {
             return this.componentId + "_theHtml";
@@ -2525,6 +2546,18 @@ var ElevenDotJs;
         }
         static defaultGuiJson() {
             let o = {
+                "head": {
+                    "link": [
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
+                            "rel": "stylesheet"
+                        },
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
+                            "rel": "stylesheet"
+                        }
+                    ]
+                },
                 "div": {
                     "style": "width: 40em; font-family: Inter; ",
                     "p": {

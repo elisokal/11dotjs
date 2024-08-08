@@ -16,7 +16,7 @@ namespace ElevenDotJs {
             this.title = title;
             this.dialogId = dialogId;
             this.clientAreaId = clientAreaId;
-            this.position = position;			
+            this.position = position;		
         }
     }
     export class Dialog {
@@ -62,7 +62,8 @@ namespace ElevenDotJs {
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
                                             "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
-                                            "title" : "close me"
+                                            "title" : "close me",
+                                            "id": this.idOfCloseIcon()
                                         }
                                     ]
                                 },
@@ -95,6 +96,12 @@ namespace ElevenDotJs {
 
             this.configureDragDrop( ret as HTMLElement, document.getElementById( this.config.dialogId+"-titleBar") );
             return ret;
+        }
+        public idOfCloseIcon() {
+            return `${this.config.dialogId}_close_icon`;
+        }
+        public closeIcon() {
+            return document.getElementById( this.idOfCloseIcon() );
         }
 
         public setPosition () {
@@ -177,4 +184,5 @@ namespace ElevenDotJs {
             };
         }
     }
+
 }

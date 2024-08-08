@@ -17,6 +17,18 @@ namespace ElevenDotJs {
             td00.nextSibling.remove();
             DocComposer.compose( 
                 {
+                    "head": {
+                        "link": [
+                            {
+                                "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
+                                "rel": "stylesheet"
+                            },
+                            {
+                                "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
+                                "rel": "stylesheet"
+                            }
+                        ] 
+                    },
                     "table": {
                         "style": "width: 100%",
                         "tr": {
@@ -42,8 +54,6 @@ namespace ElevenDotJs {
 
             // Create the code panel
             let tdCode: any = Tables.getCellElement( Demo.componentId, 1, 0 );
-            //tdCode.style.border = null;
-            //tdCode.style.padding = null;
             tdCode.innerHTML = null;
             // Use a div for best scrolling UX
             DocComposer.compose( { 
@@ -53,12 +63,12 @@ namespace ElevenDotJs {
                         "id": Demo.idOfShowHtmlCheckBox(),
                         "type": "checkbox",
                         "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
-                    },
-                },                
+                    }
+                },
                 "br": null,
                 "textarea" : {
                     "id": Demo.componentId + "_textArea",
-                    "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
+                    "style": "margin-top: 0.5em; color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
                     "rows": 40,
                     "cols": 80,
                     "spellcheck": false,
@@ -146,6 +156,11 @@ namespace ElevenDotJs {
                 }
             }, parent);
             dialog.setPosition();
+
+            let closeIcon = dialog.closeIcon();
+            if( closeIcon ) {
+                closeIcon.addEventListener( "click", ()=>{ this.showHtmlCheckBox().checked = false; } );
+            }
         }
         static idOfHtmlDialog(): string {
             return this.componentId + "_theHtml";
@@ -155,6 +170,18 @@ namespace ElevenDotJs {
         }
         private static defaultGuiJson(): string {
             let o = { 
+                "head": {
+                    "link": [
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
+                            "rel": "stylesheet"
+                        },
+                        {
+                            "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
+                            "rel": "stylesheet"
+                        }
+                    ] 
+                },
                 "div" : {
                     "style": "width: 40em; font-family: Inter; ",
                     "p": {
