@@ -1,8 +1,8 @@
 {
-    "div" : {
+    "div": {
         "style": "text-align: center; width: 40em",
         "p": {
-            "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. You can edit the below code and watch the rendering update in real time!"
+            "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. You can edit the code in the left-hand panel and watch the preview update in real time!"
         },
         "iframe": {
             "width": 640,

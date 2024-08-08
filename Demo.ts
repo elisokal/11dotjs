@@ -16,9 +16,24 @@ namespace ElevenDotJs {
             td00.nextSibling.remove();
             DocComposer.compose( 
                 {
-                    "div": {
-                        "style": "font-size: 2.5em; text-align:center;",
-                        "text" : "11dotjs D E M O"
+                    "table": {
+                        "style": "width: 100%",
+                        "tr": {
+                            "td": {
+                                "div": {
+                                    "style": "font-size: 2.5em; text-align:center;",
+                                    "text" : "D E M O * 11dotjs"
+                                }
+                            }
+                        },
+                        "tr_2": {
+                            "td": {
+                                "div": {
+                                    "style": "font-size: 1.25em; text-align:center;",
+                                    "text" : "You => JSON => DocComposer => Document"
+                                }
+                            }
+                        }
                     }
                 },
                 td00 
@@ -33,16 +48,24 @@ namespace ElevenDotJs {
             DocComposer.compose( { 
                 "textarea" : {
                     "id": Demo.componentId + "_textArea",
-                    "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);",
+                    "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
                     "rows": 40,
                     "cols": 80,
                     "spellcheck": false,
                     "text": Demo.defaultGuiJson(),
                     "oninput": "ElevenDotJs.Demo.renderPreview( event )"
+                },
+                "br": null,
+                "label": {
+                    "text": "Show the HTML",
+                    "input": {
+                        "type": "checkbox",
+                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
+                    }
                 }
             }, tdCode );
             
-            Demo.taCode = document.getElementById( Demo.componentId + "_textArea" );
+            Demo.taCode = Demo.textArea();
 
             Demo.renderPreview( null );
 
@@ -56,6 +79,11 @@ namespace ElevenDotJs {
             // Create a dark mood
             body.style.backgroundColor = "black";
         }
+
+        private static textArea(): HTMLInputElement {
+            return document.getElementById( Demo.componentId + "_textArea" ) as HTMLInputElement;
+        }
+        
         public static renderPreview( event ) {
             // Preview the GUI in the right-hand panel
             let tdPv: any = Tables.getCellElement( Demo.componentId, 1, 1 );
@@ -67,12 +95,24 @@ namespace ElevenDotJs {
             DocComposer.compose( o, tdPv );
         }
 
+        public static onChangeShowHtml( event ) {
+            if( event.target.checked ) {
+                let ta = Demo.textArea();
+                let json: string = ta.value;
+                let o = JSON.parse( json );
+                let doc = DocComposer.compose( o, null ) as any;
+                let html = doc.outerHTML; // not formatted )`.
+                alert(html);
+                let stop = 1;
+            }
+        }
+
         private static defaultGuiJson(): string {
             let o = { 
                 "div" : {
-                    "style": "text-align: center; width: 40em",
+                    "style": "width: 40em",
                     "p": {
-                        "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. You can edit the code in the left-hand panel and watch the preview update in real time!"
+                        "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
                     },
                     "iframe": {
                         "width": 640,
