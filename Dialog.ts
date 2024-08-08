@@ -37,8 +37,8 @@ namespace ElevenDotJs {
             let ui = {
                 "div": {
                     "id": this.config.dialogId,
-                    "style": `position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: ${zIndex}; `
-                    + "min-width: 256px; min-height: 256px; background-color: white; padding:0",
+                    "style": `position: fixed; left: 5em; top: 5em; border:0.1em solid RGB(88,88,88); border-radius: 0.5em; z-index: ${zIndex}; `
+                    + "min-width: 8em; min-height: 8em; background-color: white; padding:0",
                     "table" : {
                         //"style": "width: 100%",
                         "tbody": {
@@ -47,7 +47,14 @@ namespace ElevenDotJs {
                                     "td": [
                                         {
                                             "text": this.config.title,
-                                            "style": `text-align: center; font-family: ${ElevenDotJs.defaultFont}; font-size: 1.2em; cursor: move`,
+                                            "style": `
+                                                border:0.1em solid RGB(88,88,88); 
+                                                border-radius: 0.5em; 
+                                                text-align: center; 
+                                                font-family: ${ElevenDotJs.defaultFont}; 
+                                                font-size: 1.2em;
+                                                cursor: move;
+                                                background-color: RGB(228,254,250)`,
                                             "draggable": true,
                                             "id" : this.config.dialogId+"-titleBar"
                                         },
@@ -149,15 +156,8 @@ namespace ElevenDotJs {
         }
 
         public static close( dialogId: string ) {
-            ElevenDotJs.Dialog.detachElement( dialogId );
-            ElevenDotJs.Dialog.detachElement( dialogId + "_overlay" );
-        }
-
-        public static detachElement( id: string ) {
-            let el = document.getElementById( id );
-            if( el ) {
-                el.remove();
-            }
+            NodeUtil.detachElement( dialogId );
+            NodeUtil.detachElement( dialogId + "_overlay" );
         }
 
         // chat GPT 2024-06-22

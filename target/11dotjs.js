@@ -7,6 +7,12 @@ var ElevenDotJs;
             } while (node != null && node.tagName != tagName);
             return node;
         }
+        static detachElement(id) {
+            let el = document.getElementById(id);
+            if (el) {
+                el.remove();
+            }
+        }
     }
     ElevenDotJs.NodeUtil = NodeUtil;
 })(ElevenDotJs || (ElevenDotJs = {}));
@@ -948,8 +954,8 @@ var ElevenDotJs;
             let ui = {
                 "div": {
                     "id": this.config.dialogId,
-                    "style": `position: fixed; left: 40px; top: 40px; border:2px solid gray; border-radius: 8px; z-index: ${zIndex}; `
-                        + "min-width: 256px; min-height: 256px; background-color: white; padding:0",
+                    "style": `position: fixed; left: 5em; top: 5em; border:0.1em solid RGB(88,88,88); border-radius: 0.5em; z-index: ${zIndex}; `
+                        + "min-width: 8em; min-height: 8em; background-color: white; padding:0",
                     "table": {
                         //"style": "width: 100%",
                         "tbody": {
@@ -958,7 +964,14 @@ var ElevenDotJs;
                                     "td": [
                                         {
                                             "text": this.config.title,
-                                            "style": `text-align: center; font-family: ${ElevenDotJs.defaultFont}; font-size: 1.2em; cursor: move`,
+                                            "style": `
+                                                border:0.1em solid RGB(88,88,88); 
+                                                border-radius: 0.5em; 
+                                                text-align: center; 
+                                                font-family: ${ElevenDotJs.defaultFont}; 
+                                                font-size: 1.2em;
+                                                cursor: move;
+                                                background-color: RGB(228,254,250)`,
                                             "draggable": true,
                                             "id": this.config.dialogId + "-titleBar"
                                         },
@@ -1056,14 +1069,8 @@ var ElevenDotJs;
             }
         }
         static close(dialogId) {
-            ElevenDotJs.Dialog.detachElement(dialogId);
-            ElevenDotJs.Dialog.detachElement(dialogId + "_overlay");
-        }
-        static detachElement(id) {
-            let el = document.getElementById(id);
-            if (el) {
-                el.remove();
-            }
+            ElevenDotJs.NodeUtil.detachElement(dialogId);
+            ElevenDotJs.NodeUtil.detachElement(dialogId + "_overlay");
         }
         // chat GPT 2024-06-22
         static applyOffset(styleLeft, styleTop, offsetX, offsetY) {
@@ -2389,6 +2396,7 @@ var ElevenDotJs;
         static demo() {
             // Get the code of this demo to show in the center pane.
             const body = document.body;
+            body.style.fontFamily = "Inter";
             ElevenDotJs.DocComposer.compose(Demo.layoutTable(), body);
             // Reconfigure the top row
             let td00 = ElevenDotJs.Tables.getCellElement(Demo.componentId, 0, 0);
@@ -2422,6 +2430,15 @@ var ElevenDotJs;
             tdCode.innerHTML = null;
             // Use a div for best scrolling UX
             ElevenDotJs.DocComposer.compose({
+                "label": {
+                    "text": "Show the HTML",
+                    "input": {
+                        "id": Demo.idOfShowHtmlCheckBox(),
+                        "type": "checkbox",
+                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
+                    },
+                },
+                "br": null,
                 "textarea": {
                     "id": Demo.componentId + "_textArea",
                     "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
@@ -2430,14 +2447,6 @@ var ElevenDotJs;
                     "spellcheck": false,
                     "text": Demo.defaultGuiJson(),
                     "oninput": "ElevenDotJs.Demo.renderPreview( event )"
-                },
-                "br": null,
-                "label": {
-                    "text": "Show the HTML",
-                    "input": {
-                        "type": "checkbox",
-                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
-                    }
                 }
             }, tdCode);
             Demo.taCode = Demo.textArea();
@@ -2450,6 +2459,12 @@ var ElevenDotJs;
             }
             // Create a dark mood
             body.style.backgroundColor = "black";
+        }
+        static idOfShowHtmlCheckBox() {
+            return Demo.componentId + "_cbHtml";
+        }
+        static showHtmlCheckBox() {
+            return document.getElementById(Demo.idOfShowHtmlCheckBox());
         }
         static textArea() {
             return document.getElementById(Demo.componentId + "_textArea");
@@ -2464,21 +2479,57 @@ var ElevenDotJs;
         }
         static onChangeShowHtml(event) {
             if (event.target.checked) {
-                let ta = Demo.textArea();
-                let json = ta.value;
-                let o = JSON.parse(json);
-                let doc = ElevenDotJs.DocComposer.compose(o, null);
-                let html = doc.outerHTML;
-                alert(html);
-                let stop = 1;
+                Demo.showHtml();
             }
+            else {
+                Demo.hideHtml();
+            }
+        }
+        static hideHtml() {
+            ElevenDotJs.NodeUtil.detachElement(Demo.idOfHtmlDialog());
+        }
+        static showHtml() {
+            let ta = Demo.textArea();
+            let json = ta.value;
+            let o = JSON.parse(json);
+            let doc = ElevenDotJs.DocComposer.compose(o, null);
+            let html = doc.outerHTML; // not formatted )`.
+            //alert(html);
+            let clientAreaId = this.componentId + "_dialogClientArea";
+            let dialog = new ElevenDotJs.Dialog({
+                "modal": false,
+                "parent": document.body,
+                "title": "HTML",
+                "dialogId": Demo.idOfHtmlDialog(),
+                "clientAreaId": clientAreaId,
+                "position": ElevenDotJs.DialogPosition.center
+            });
+            let parent = document.getElementById(clientAreaId);
+            ElevenDotJs.DocComposer.compose({
+                "div": {
+                    "style": `
+                            max-width: 30em; 
+                            overflow: auto; 
+                            font-family: Roboto Mono; 
+                            font-size: small`,
+                    "text": html
+                }
+            }, parent);
+            dialog.setPosition();
+        }
+        static idOfHtmlDialog() {
+            return this.componentId + "_theHtml";
+        }
+        static htmlDialog() {
+            return document.getElementById(Demo.idOfHtmlDialog());
         }
         static defaultGuiJson() {
             let o = {
                 "div": {
-                    "style": "width: 40em",
+                    "style": "width: 40em; font-family: Inter; ",
                     "p": {
-                        "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
+                        "text": `Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model 
+                        based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update.`
                     },
                     "iframe": {
                         "width": 640,
@@ -2502,7 +2553,7 @@ var ElevenDotJs;
                 "rowCount": 2,
                 "columnCount": 2,
                 "cellContent": [[{}]],
-                "cellStyle": [["padding: 2em; background-color: RGB(11,11,11); border: 0.7em solid RGB(44,44,44); border-radius: 2em; color: RGB(180, 180, 180); font-family: Inter; vertical-align: top"]]
+                "cellStyle": [["padding: 2em; background-color: RGB(11,11,11); border: 0.7em solid RGB(44,44,44); border-radius: 2em; color: RGB(180, 180, 180); vertical-align: top"]]
             });
             return ret;
         }

@@ -8,6 +8,7 @@ namespace ElevenDotJs {
         public static demo() {
             // Get the code of this demo to show in the center pane.
             const body = document.body;
+            body.style.fontFamily = "Inter";
             DocComposer.compose( Demo.layoutTable(), body );
 
             // Reconfigure the top row
@@ -46,6 +47,15 @@ namespace ElevenDotJs {
             tdCode.innerHTML = null;
             // Use a div for best scrolling UX
             DocComposer.compose( { 
+                "label": {
+                    "text": "Show the HTML",
+                    "input": {
+                        "id": Demo.idOfShowHtmlCheckBox(),
+                        "type": "checkbox",
+                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
+                    },
+                },                
+                "br": null,
                 "textarea" : {
                     "id": Demo.componentId + "_textArea",
                     "style": "color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
@@ -54,14 +64,6 @@ namespace ElevenDotJs {
                     "spellcheck": false,
                     "text": Demo.defaultGuiJson(),
                     "oninput": "ElevenDotJs.Demo.renderPreview( event )"
-                },
-                "br": null,
-                "label": {
-                    "text": "Show the HTML",
-                    "input": {
-                        "type": "checkbox",
-                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
-                    }
                 }
             }, tdCode );
             
@@ -78,6 +80,14 @@ namespace ElevenDotJs {
 
             // Create a dark mood
             body.style.backgroundColor = "black";
+        }
+        
+        static idOfShowHtmlCheckBox(): string {
+            return Demo.componentId + "_cbHtml";
+        }
+       
+        static showHtmlCheckBox(): HTMLInputElement {
+            return document.getElementById( Demo.idOfShowHtmlCheckBox() ) as HTMLInputElement;
         }
 
         private static textArea(): HTMLInputElement {
@@ -97,22 +107,59 @@ namespace ElevenDotJs {
 
         public static onChangeShowHtml( event ) {
             if( event.target.checked ) {
-                let ta = Demo.textArea();
-                let json: string = ta.value;
-                let o = JSON.parse( json );
-                let doc = DocComposer.compose( o, null ) as any;
-                let html = doc.outerHTML; // not formatted )`.
-                alert(html);
-                let stop = 1;
+                Demo.showHtml();
+            } else {
+                Demo.hideHtml();
             }
         }
 
+        static hideHtml() {
+            NodeUtil.detachElement( Demo.idOfHtmlDialog() );
+        }
+
+        private static showHtml() {
+            let ta = Demo.textArea();
+            let json: string = ta.value;
+            let o = JSON.parse(json);
+            let doc = DocComposer.compose(o, null) as any;
+            let html = doc.outerHTML; // not formatted )`.
+
+            //alert(html);
+            let clientAreaId = this.componentId + "_dialogClientArea";
+            let dialog = new Dialog({
+                "modal": false,
+                "parent": document.body,
+                "title": "HTML",
+                "dialogId": Demo.idOfHtmlDialog(),
+                "clientAreaId": clientAreaId,
+                "position": DialogPosition.center
+            });
+            let parent = document.getElementById(clientAreaId);
+            DocComposer.compose({
+                "div": {
+                    "style": `
+                            max-width: 30em; 
+                            overflow: auto; 
+                            font-family: Roboto Mono; 
+                            font-size: small`,
+                    "text": html
+                }
+            }, parent);
+            dialog.setPosition();
+        }
+        static idOfHtmlDialog(): string {
+            return this.componentId + "_theHtml";
+        }
+        private static htmlDialog(): HTMLElement {
+            return document.getElementById( Demo.idOfHtmlDialog() ) as HTMLElement;
+        }
         private static defaultGuiJson(): string {
             let o = { 
                 "div" : {
-                    "style": "width: 40em",
+                    "style": "width: 40em; font-family: Inter; ",
                     "p": {
-                        "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
+                        "text": `Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model 
+                        based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update.`
                     },
                     "iframe": {
                         "width": 640,
@@ -137,7 +184,7 @@ namespace ElevenDotJs {
                 "rowCount": 2, 
                 "columnCount": 2, 
                 "cellContent": [ [ {  } ] ],
-                "cellStyle": [ [ "padding: 2em; background-color: RGB(11,11,11); border: 0.7em solid RGB(44,44,44); border-radius: 2em; color: RGB(180, 180, 180); font-family: Inter; vertical-align: top"  ] ]
+                "cellStyle": [ [ "padding: 2em; background-color: RGB(11,11,11); border: 0.7em solid RGB(44,44,44); border-radius: 2em; color: RGB(180, 180, 180); vertical-align: top"  ] ]
             } );
             return ret;
         }
