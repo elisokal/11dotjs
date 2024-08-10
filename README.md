@@ -8,7 +8,7 @@ With the **11dotjs** web-authoring model, you can
 - Code your UI in intuitive JSON.
 - Call **11dotjs** generators to add structures like tables.
 - Write your own generators.
-- Invoke the **11dotjs Composer** to convert your UI object graph directly to the browser’s DOM document.
+- Invoke the **11dotjs DocComposer** to convert your UI object graph directly to the browser’s DOM document.
 ## See a Demo
 There’s a demo at http://elisokal.com/11dotjs/demoDemo.html. 
 ## Learn More
