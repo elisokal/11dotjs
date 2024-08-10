@@ -673,14 +673,14 @@ Rgb.mRed = 255 << 16;
 Rgb.mGreen = 255 << 8;
 Rgb.mBlue = 255;
 Rgb.mColor = ~Rgb.mAlpha;
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     class TableConfig {
         constructor() {
             this.hasHeader = true;
         }
     }
-    ElevenDotJs.TableConfig = TableConfig;
+    _11dotjs.TableConfig = TableConfig;
     class Tables {
         static generate(config) {
             const componentId = (config.componentId) ? config.componentId : Tables.defaultComponentId;
@@ -744,15 +744,15 @@ var ElevenDotJs;
                 "cellStyle": [["padding: 24px; background-color: RGB(242,251,50);"]]
                 //"cellStyle": [ [ { "padding": "24px", "backgroundColor": "RGB(242,251,50)" } ] ],
             });
-            ElevenDotJs.DocComposer.compose(ui, document.body);
+            _11dotjs.DocComposer.compose(ui, document.body);
             // Retrieve a cell
             let el = Tables.getCellElement(Tables.defaultComponentId, 0, 0);
             let stop = 1;
         }
     }
-    Tables.defaultComponentId = "ElevenDotJs.Tables";
-    ElevenDotJs.Tables = Tables;
-})(ElevenDotJs || (ElevenDotJs = {}));
+    Tables.defaultComponentId = "_11dotjs.Tables";
+    _11dotjs.Tables = Tables;
+})(_11dotjs || (_11dotjs = {}));
 //
 // 2024-06-16
 // This class created by Eli Sokal
@@ -764,8 +764,8 @@ var ElevenDotJs;
 // Return value: If a parent node is passed in, we return the first child
 // node that we appended to it. Otherwise, we return the whole wrapperNode.
 //
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     class DocComposer {
         static compose(source, parent) {
             // A wrapper is necessary because the source may not be rooted (IOW, it might be >1 object)
@@ -877,15 +877,15 @@ var ElevenDotJs;
             return ret;
         }
     }
-    ElevenDotJs.DocComposer = DocComposer;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
-    ElevenDotJs.defaultFont = "consolas";
+    _11dotjs.DocComposer = DocComposer;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
+    _11dotjs.defaultFont = "consolas";
     let DialogPosition;
     (function (DialogPosition) {
         DialogPosition[DialogPosition["center"] = 1] = "center";
-    })(DialogPosition = ElevenDotJs.DialogPosition || (ElevenDotJs.DialogPosition = {}));
+    })(DialogPosition = _11dotjs.DialogPosition || (_11dotjs.DialogPosition = {}));
     class DialogConfig {
         constructor(modal, parent, title, dialogId, clientAreaId, position) {
             this.modal = modal;
@@ -896,7 +896,7 @@ var ElevenDotJs;
             this.position = position;
         }
     }
-    ElevenDotJs.DialogConfig = DialogConfig;
+    _11dotjs.DialogConfig = DialogConfig;
     class Dialog {
         constructor(config) {
             this.dragStart = null;
@@ -918,14 +918,14 @@ var ElevenDotJs;
                                     "td": [
                                         {
                                             "text": this.config.title,
-                                            "style": `text-align: center; font-family: ${ElevenDotJs.defaultFont}; font-size: 1.2em; cursor: move`,
+                                            "style": `text-align: center; font-family: ${_11dotjs.defaultFont}; font-size: 1.2em; cursor: move`,
                                             "draggable": true,
                                             "id": this.config.dialogId + "-titleBar"
                                         },
                                         {
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
-                                            "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
+                                            "onclick": `_11dotjs.Dialog.close('${this.config.dialogId}');`,
                                             "title": "close me"
                                         }
                                     ]
@@ -951,11 +951,11 @@ var ElevenDotJs;
                         "style": `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: ${zIndex - 1};`
                     }
                 };
-                let overlayNode = ElevenDotJs.DocComposer.compose(overlay, this.config.parent);
-                ret = ElevenDotJs.DocComposer.compose(ui, overlayNode);
+                let overlayNode = _11dotjs.DocComposer.compose(overlay, this.config.parent);
+                ret = _11dotjs.DocComposer.compose(ui, overlayNode);
             }
             else {
-                ret = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+                ret = _11dotjs.DocComposer.compose(ui, this.config.parent);
             }
             this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
             return ret;
@@ -1016,8 +1016,8 @@ var ElevenDotJs;
             }
         }
         static close(dialogId) {
-            ElevenDotJs.Dialog.detachElement(dialogId);
-            ElevenDotJs.Dialog.detachElement(dialogId + "_overlay");
+            _11dotjs.Dialog.detachElement(dialogId);
+            _11dotjs.Dialog.detachElement(dialogId + "_overlay");
         }
         static detachElement(id) {
             let el = document.getElementById(id);
@@ -1040,10 +1040,10 @@ var ElevenDotJs;
             };
         }
     }
-    ElevenDotJs.Dialog = Dialog;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
+    _11dotjs.Dialog = Dialog;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
     class ColorPalette {
         constructor(color, callback, componentId) {
             this.imageCache = new Map();
@@ -1052,18 +1052,18 @@ var ElevenDotJs;
             this.callback = callback;
             this.componentId = componentId;
             if (!this.componentId) {
-                this.componentId = "ElevenDotJs.colorPalette";
+                this.componentId = "_11dotjs.colorPalette";
             }
             let canvas = this.getTheRenderCanvas();
             if (!canvas) {
                 let clientAreaId = this.componentId + "_dialogClientArea";
-                let dialog = new ElevenDotJs.Dialog({
+                let dialog = new _11dotjs.Dialog({
                     "modal": false,
                     "parent": document.body,
                     "title": "Intuitive Color Palette",
                     "dialogId": this.componentId + "_colorPaletteDialog",
                     "clientAreaId": clientAreaId,
-                    "position": ElevenDotJs.DialogPosition.center
+                    "position": _11dotjs.DialogPosition.center
                 });
                 this.createUi(document.getElementById(clientAreaId));
                 canvas = this.getTheRenderCanvas();
@@ -1078,8 +1078,8 @@ var ElevenDotJs;
                 let controlsParent = document.getElementById(this.componentId + "_controls_parent");
                 if (controlsParent) {
                     // Add an experimental button to save the image
-                    this.objectStorage = new ElevenDotJs.ObjectStorage({
-                        "operation": ElevenDotJs.ObjectStorageOperation.write,
+                    this.objectStorage = new _11dotjs.ObjectStorage({
+                        "operation": _11dotjs.ObjectStorageOperation.write,
                         "parent": controlsParent,
                         "label": "Click here to save the image: ",
                         "callback": (payload) => { console.log(`Write ${payload}`); }
@@ -1132,7 +1132,7 @@ var ElevenDotJs;
                                         "style": "width:64px; vertical-align: top",
                                         "input_r": {
                                             "type": "number",
-                                            "style": `color:red; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:red; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_redByte",
                                             min: 0,
                                             max: 255,
@@ -1141,7 +1141,7 @@ var ElevenDotJs;
                                         "br_1": null,
                                         "input_g": {
                                             "type": "number",
-                                            "style": `color:green; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:green; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_greenByte",
                                             min: 0,
                                             max: 255,
@@ -1150,7 +1150,7 @@ var ElevenDotJs;
                                         "br_2": null,
                                         "input_b": {
                                             "type": "number",
-                                            "style": `color:blue; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:blue; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_blueByte",
                                             min: 0,
                                             max: 255,
@@ -1159,7 +1159,7 @@ var ElevenDotJs;
                                         "br_3": null,
                                         "span": {
                                             "id": this.componentId + "_controls_parent" //,
-                                            //"onclick": () => { ElevenDotJs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
+                                            //"onclick": () => { _11dotjs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
                                         }
                                     }
                                 ]
@@ -1179,7 +1179,7 @@ var ElevenDotJs;
                     }
                 }
             };
-            ElevenDotJs.DocComposer.compose(ui, parent);
+            _11dotjs.DocComposer.compose(ui, parent);
         }
         configure(canvas) {
             canvas.addEventListener('click', this.handleMouseClick.bind(this));
@@ -1238,7 +1238,7 @@ var ElevenDotJs;
                     let sy = canvas.height / palette.height;
                     let palette2 = VisImage.fromImageData(palette).cropImageToContent();
                     let palette3 = palette2.scale(canvas.width, canvas.height);
-                    ctx.font = `1em ${ElevenDotJs.defaultFont}`;
+                    ctx.font = `1em ${_11dotjs.defaultFont}`;
                     ctx.putImageData(palette3.getImageData(), 0, 0);
                     this.showLuminanceLabel(ctx, luminance);
                     if (this.objectStorage) {
@@ -1375,9 +1375,9 @@ var ElevenDotJs;
         }
     }
     ColorPalette.rgbCanvasFill = null;
-    ElevenDotJs.ColorPalette = ColorPalette;
+    _11dotjs.ColorPalette = ColorPalette;
     //export var colorPalette = new ColorPalette();
-})(ElevenDotJs || (ElevenDotJs = {}));
+})(_11dotjs || (_11dotjs = {}));
 /* Generated from Java with JSweet 3.1.0 - http://www.jsweet.org */
 var Axis;
 (function (Axis) {
@@ -2171,16 +2171,16 @@ function webGlHello() {
 }
 // Execute the main function
 //main();
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     let ObjectStorageOperation;
     (function (ObjectStorageOperation) {
         ObjectStorageOperation[ObjectStorageOperation["read"] = 1] = "read";
         ObjectStorageOperation[ObjectStorageOperation["write"] = 2] = "write";
-    })(ObjectStorageOperation = ElevenDotJs.ObjectStorageOperation || (ElevenDotJs.ObjectStorageOperation = {}));
+    })(ObjectStorageOperation = _11dotjs.ObjectStorageOperation || (_11dotjs.ObjectStorageOperation = {}));
     class ObjectStorageConfig {
     }
-    ElevenDotJs.ObjectStorageConfig = ObjectStorageConfig;
+    _11dotjs.ObjectStorageConfig = ObjectStorageConfig;
     class ObjectStorage {
         constructor(config, componentId, writePayload) {
             this.readPayload = null;
@@ -2193,18 +2193,18 @@ var ElevenDotJs;
             let ui = {
                 "label": {
                     "text": this.config.label,
-                    "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                    "style": `font-family: ${_11dotjs.defaultFont};`,
                     "input": {
                         "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
                         "multiple": this.config.multiple,
-                        "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                        "style": `font-family: ${_11dotjs.defaultFont};`,
                     }
                 }
             };
-            ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            _11dotjs.DocComposer.compose(ui, this.config.parent);
             this.inputElement().addEventListener("input", this.inputHandler());
         }
         inputElementId() {
@@ -2285,12 +2285,12 @@ var ElevenDotJs;
                 }
             }
             else {
-                console.log("ElevenDotJs.ObjectStorage.writeFile: no payload!");
+                console.log("_11dotjs.ObjectStorage.writeFile: no payload!");
             }
         }
         setPayload(payload) {
             this.writePayload = payload;
         }
     }
-    ElevenDotJs.ObjectStorage = ObjectStorage;
-})(ElevenDotJs || (ElevenDotJs = {}));
+    _11dotjs.ObjectStorage = ObjectStorage;
+})(_11dotjs || (_11dotjs = {}));

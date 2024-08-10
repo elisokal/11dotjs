@@ -10,7 +10,7 @@
 // Return value: If a parent node is passed in, we return the first child
 // node that we appended to it. Otherwise, we return the whole wrapperNode.
 //
-namespace ElevenDotJs {
+namespace _11dotjs {
     export class DocComposer {
         private static docRoot: Node;
         public static compose( source: Object, parent: Node ): Node {
@@ -48,6 +48,9 @@ namespace ElevenDotJs {
                         // RECURSE
                         for( let value2 of value ) {
                             let newNode = document.createElement( key );
+                            if( newNode instanceof HTMLUnknownElement) {
+                                throw `Unknown HTML tag '${key}'`;
+                            }
                             doc.appendChild( newNode );
                             t2 = DocComposer.docTrace( newNode );
                             DocComposer.composer( value2, key, newNode, level+1 );

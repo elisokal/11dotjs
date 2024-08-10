@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
     export class Animation {
         public static byDuration(task: FrameRequestCallback, durationMs: number, fps: number) {
             const start = performance.now();

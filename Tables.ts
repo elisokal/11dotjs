@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
 
     export class TableConfig {
         rowCount: number;
@@ -11,7 +11,7 @@ namespace ElevenDotJs {
         hasHeader?: boolean = true;
     }
     export class Tables {
-        public static defaultComponentId = "ElevenDotJs.Tables";
+        public static defaultComponentId = "_11dotjs.Tables";
         public static generate( config: TableConfig ): Object {
             const componentId = ( config.componentId ) ? config.componentId : Tables.defaultComponentId;
             const tbody = {};

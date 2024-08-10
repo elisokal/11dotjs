@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
 	export class ColorPalette {
 		private imageCache = new Map< string, VisImage >();
 		private markerLocation: ColRow = null;
@@ -8,20 +8,20 @@ namespace ElevenDotJs {
 		// To setup oninput events, we need the name of the ColorPalette object
 		private componentId: string;
 
-		private objectStorage: ElevenDotJs.ObjectStorage;
+		private objectStorage: _11dotjs.ObjectStorage;
 
-		public constructor( color: RGB, callback: Function, componentId: string ) {
+		public constructor( color: RGB, callback: Function, componentId: string, modal?: boolean ) {
 			this.callback = callback;
 			this.componentId = componentId;
 			if( !this.componentId ) {
-				this.componentId = "ElevenDotJs.colorPalette";
+				this.componentId = "_11dotjs.colorPalette";
 			}
 
 			let canvas = this.getTheRenderCanvas();
 			if( !canvas ) {
 				let clientAreaId = this.componentId + "_dialogClientArea";
 				let dialog = new Dialog( { 
-					"modal": false,
+					"modal": modal,
 					"parent": document.body,
 					"title": "Intuitive Color Palette",
 					"dialogId": this.componentId + "_colorPaletteDialog",
@@ -42,9 +42,9 @@ namespace ElevenDotJs {
 				let controlsParent = document.getElementById( this.componentId + "_controls_parent" ) ;
 				if( controlsParent ) {
 					// Add an experimental button to save the image
-					this.objectStorage = new ElevenDotJs.ObjectStorage( 
+					this.objectStorage = new _11dotjs.ObjectStorage( 
 						{ 
-							"operation": ElevenDotJs.ObjectStorageOperation.write, 
+							"operation": _11dotjs.ObjectStorageOperation.write, 
 							"parent": controlsParent,
 							"label": "Click here to save the image: ",
 							"callback": ( payload ) => { console.log( `Write ${payload}` ); }
@@ -106,7 +106,7 @@ namespace ElevenDotJs {
 										"style": "width:64px; vertical-align: top",
 										"input_r" : {
 											"type" : "number",
-											"style": `color:red; font-family: ${ElevenDotJs.defaultFont};`,
+											"style": `color:red; font-family: ${_11dotjs.defaultFont};`,
 											"id": this.componentId + "_redByte",
 											min: 0,
 											max: 255,
@@ -115,7 +115,7 @@ namespace ElevenDotJs {
 										"br_1": null,
 										"input_g" : {
 											"type" : "number",
-											"style": `color:green; font-family: ${ElevenDotJs.defaultFont};`,
+											"style": `color:green; font-family: ${_11dotjs.defaultFont};`,
 											"id": this.componentId + "_greenByte",
 											min: 0,
 											max: 255,
@@ -124,7 +124,7 @@ namespace ElevenDotJs {
 										"br_2": null,
 										"input_b" : {
 											"type" : "number",
-											"style": `color:blue; font-family: ${ElevenDotJs.defaultFont};`,
+											"style": `color:blue; font-family: ${_11dotjs.defaultFont};`,
 											"id": this.componentId + "_blueByte",
 											min: 0,
 											max: 255,
@@ -133,7 +133,7 @@ namespace ElevenDotJs {
 										"br_3": null,
 										"span": {
 											"id" : this.componentId + "_controls_parent" //,
-											//"onclick": () => { ElevenDotJs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
+											//"onclick": () => { _11dotjs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
 										}
 									}
 								]
@@ -219,7 +219,7 @@ namespace ElevenDotJs {
 					let sy = canvas.height / palette.height;
 					let palette2 = VisImage.fromImageData( palette ).cropImageToContent();
 					let palette3 = palette2.scale(canvas.width, canvas.height);
-					ctx.font = `1em ${ElevenDotJs.defaultFont}`;
+					ctx.font = `1em ${_11dotjs.defaultFont}`;
 					ctx.putImageData(palette3.getImageData(), 0, 0);
 					this.showLuminanceLabel( ctx, luminance );
 					if( this.objectStorage ) {

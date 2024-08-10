@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
     export class NodeUtil {
         public static firstParent( node: Node, tagName: string ) {
             do {

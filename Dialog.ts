@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
     export const defaultFont = "consolas";
     export enum DialogPosition {
         center = 1
@@ -51,7 +51,7 @@ namespace ElevenDotJs {
                                                 border:0.1em solid RGB(88,88,88); 
                                                 border-radius: 0.5em; 
                                                 text-align: center; 
-                                                font-family: ${ElevenDotJs.defaultFont}; 
+                                                font-family: ${_11dotjs.defaultFont}; 
                                                 font-size: 1.2em;
                                                 cursor: move;
                                                 background-color: RGB(228,254,250)`,
@@ -61,7 +61,7 @@ namespace ElevenDotJs {
                                         {
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
-                                            "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
+                                            "onclick": `_11dotjs.Dialog.close('${this.config.dialogId}');`,
                                             "title" : "close me",
                                             "id": this.idOfCloseIcon()
                                         }

@@ -1,4 +1,4 @@
-namespace ElevenDotJs {
+namespace _11dotjs {
     export enum ObjectStorageOperation {
         read=1,
         write
@@ -31,14 +31,14 @@ namespace ElevenDotJs {
             let ui = {
                 "label": {
                     "text": this.config.label,
-                    "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                    "style": `font-family: ${_11dotjs.defaultFont};`,
                     "input": {
                         "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
                         "multiple": this.config.multiple,
-                        "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                        "style": `font-family: ${_11dotjs.defaultFont};`,
                     }
                 }
             }
@@ -115,41 +115,50 @@ namespace ElevenDotJs {
                 let file = ev.target.files[0];
 
                 try {
-                    // Create a new blob with the JSON data
-                    let blob = new Blob([json], { type: 'application/json' });
-
-                    // Create a link element
-                    let link = document.createElement('a');
-
-                    // Create a URL for the blob and set it as the href attribute
-                    link.href = URL.createObjectURL(blob);
-
-                    // Set the download attribute with the original file name
-                    link.download = file.name;
-
-                    // Append the link to the body (necessary for Firefox)
-                    document.body.appendChild(link);
-
-                    // Programmatically click the link to trigger the download
-                    link.click();
-
-                    // Clean up the URL object
-                    URL.revokeObjectURL(link.href);
-
-                    // Remove the link from the document
-                    document.body.removeChild(link);
-
+                    ObjectStorage.downloadJson( json, file.name );
                     console.log("File written successfully");
                 } catch (error) {
                     console.error("Error writing file:", error);
                 }
             } else {
-                console.log( "ElevenDotJs.ObjectStorage.writeFile: no payload!" );
+                console.log( "_11dotjs.ObjectStorage.writeFile: no payload!" );
             }
         }
 
         public setPayload( payload: Object ) {
             this.writePayload = payload;
+        }
+
+        public static downloadObject( payload: Object, name: string ) {
+            let json = JSON.stringify( payload );
+            ObjectStorage.downloadJson( json, name );
+        }
+
+        public static downloadJson( json: string, name: string ) {
+            // Create a new blob with the JSON data
+            let blob = new Blob([json], { type: 'application/json' });
+
+            // Create a link element
+            let link = document.createElement('a');
+
+            // Create a URL for the blob and set it as the href attribute
+            link.href = URL.createObjectURL(blob);
+
+            // Set the download attribute with the original file name
+            link.download = name;
+
+            // Append the link to the body (necessary for Firefox)
+            document.body.appendChild(link);
+
+            // Programmatically click the link to trigger the download
+            link.click();
+
+            // Clean up the URL object
+            URL.revokeObjectURL(link.href);
+
+            // Remove the link from the document
+            document.body.removeChild(link);
+
         }
     }
 }

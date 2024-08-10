@@ -1,5 +1,5 @@
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     class NodeUtil {
         static firstParent(node, tagName) {
             do {
@@ -14,8 +14,8 @@ var ElevenDotJs;
             }
         }
     }
-    ElevenDotJs.NodeUtil = NodeUtil;
-})(ElevenDotJs || (ElevenDotJs = {}));
+    _11dotjs.NodeUtil = NodeUtil;
+})(_11dotjs || (_11dotjs = {}));
 class VisImage {
     constructor(width, height, data) {
         //super( width, height );
@@ -691,14 +691,14 @@ Rgb.mRed = 255 << 16;
 Rgb.mGreen = 255 << 8;
 Rgb.mBlue = 255;
 Rgb.mColor = ~Rgb.mAlpha;
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     class TableConfig {
         constructor() {
             this.hasHeader = true;
         }
     }
-    ElevenDotJs.TableConfig = TableConfig;
+    _11dotjs.TableConfig = TableConfig;
     class Tables {
         static generate(config) {
             const componentId = (config.componentId) ? config.componentId : Tables.defaultComponentId;
@@ -765,12 +765,12 @@ var ElevenDotJs;
                 //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
                 "cellStyle": [["padding: 24px; background-color: RGB(0,0,0);"]]
             });
-            ElevenDotJs.DocComposer.compose(ui, document.body);
+            _11dotjs.DocComposer.compose(ui, document.body);
             // Retrieve a cell
             let el = Tables.getCellElement(componentId, 0, 0);
             //el.style.setProperty("background-color", "red" );
             // now manipulate the table itself
-            let table = ElevenDotJs.NodeUtil.firstParent(el, "TABLE");
+            let table = _11dotjs.NodeUtil.firstParent(el, "TABLE");
             if (table) {
                 let tEl = table;
                 tEl.style.margin = "auto";
@@ -780,14 +780,14 @@ var ElevenDotJs;
                 tEl.style.transform = css;
                 let stop = 1;
                 if (true) {
-                    ElevenDotJs.Animation.byDuration((timestamp) => {
+                    _11dotjs.Animation.byDuration((timestamp) => {
                         angle += increment;
                         css = `rotate3d(1,1,1,${angle}deg)`;
                         tEl.style.transform = css;
                     }, 30000, 60);
                 }
                 if (false) {
-                    ElevenDotJs.Animation.byIterations((timestamp) => {
+                    _11dotjs.Animation.byIterations((timestamp) => {
                         angle += increment;
                         css = `rotate(${angle}deg)`;
                         tEl.style.transform = css;
@@ -796,9 +796,9 @@ var ElevenDotJs;
             }
         }
     }
-    Tables.defaultComponentId = "ElevenDotJs.Tables";
-    ElevenDotJs.Tables = Tables;
-})(ElevenDotJs || (ElevenDotJs = {}));
+    Tables.defaultComponentId = "_11dotjs.Tables";
+    _11dotjs.Tables = Tables;
+})(_11dotjs || (_11dotjs = {}));
 //
 // 2024-06-16
 // This class created by Eli Sokal
@@ -810,8 +810,8 @@ var ElevenDotJs;
 // Return value: If a parent node is passed in, we return the first child
 // node that we appended to it. Otherwise, we return the whole wrapperNode.
 //
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     class DocComposer {
         static compose(source, parent) {
             // A wrapper is necessary because the source may not be rooted (IOW, it might be >1 object)
@@ -847,6 +847,9 @@ var ElevenDotJs;
                             // RECURSE
                             for (let value2 of value) {
                                 let newNode = document.createElement(key);
+                                if (newNode instanceof HTMLUnknownElement) {
+                                    throw `Unknown HTML tag '${key}'`;
+                                }
                                 doc.appendChild(newNode);
                                 t2 = DocComposer.docTrace(newNode);
                                 DocComposer.composer(value2, key, newNode, level + 1);
@@ -923,15 +926,15 @@ var ElevenDotJs;
             return ret;
         }
     }
-    ElevenDotJs.DocComposer = DocComposer;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
-    ElevenDotJs.defaultFont = "consolas";
+    _11dotjs.DocComposer = DocComposer;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
+    _11dotjs.defaultFont = "consolas";
     let DialogPosition;
     (function (DialogPosition) {
         DialogPosition[DialogPosition["center"] = 1] = "center";
-    })(DialogPosition = ElevenDotJs.DialogPosition || (ElevenDotJs.DialogPosition = {}));
+    })(DialogPosition = _11dotjs.DialogPosition || (_11dotjs.DialogPosition = {}));
     class DialogConfig {
         constructor(modal, parent, title, dialogId, clientAreaId, position) {
             this.modal = modal;
@@ -942,7 +945,7 @@ var ElevenDotJs;
             this.position = position;
         }
     }
-    ElevenDotJs.DialogConfig = DialogConfig;
+    _11dotjs.DialogConfig = DialogConfig;
     class Dialog {
         constructor(config) {
             this.dragStart = null;
@@ -968,7 +971,7 @@ var ElevenDotJs;
                                                 border:0.1em solid RGB(88,88,88); 
                                                 border-radius: 0.5em; 
                                                 text-align: center; 
-                                                font-family: ${ElevenDotJs.defaultFont}; 
+                                                font-family: ${_11dotjs.defaultFont}; 
                                                 font-size: 1.2em;
                                                 cursor: move;
                                                 background-color: RGB(228,254,250)`,
@@ -978,7 +981,7 @@ var ElevenDotJs;
                                         {
                                             "text": "\u00D7",
                                             "style": "text-align: right; width:1em; cursor: pointer; font-size:1.5em",
-                                            "onclick": `ElevenDotJs.Dialog.close('${this.config.dialogId}');`,
+                                            "onclick": `_11dotjs.Dialog.close('${this.config.dialogId}');`,
                                             "title": "close me",
                                             "id": this.idOfCloseIcon()
                                         }
@@ -1005,11 +1008,11 @@ var ElevenDotJs;
                         "style": `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: ${zIndex - 1};`
                     }
                 };
-                let overlayNode = ElevenDotJs.DocComposer.compose(overlay, this.config.parent);
-                ret = ElevenDotJs.DocComposer.compose(ui, overlayNode);
+                let overlayNode = _11dotjs.DocComposer.compose(overlay, this.config.parent);
+                ret = _11dotjs.DocComposer.compose(ui, overlayNode);
             }
             else {
-                ret = ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+                ret = _11dotjs.DocComposer.compose(ui, this.config.parent);
             }
             this.configureDragDrop(ret, document.getElementById(this.config.dialogId + "-titleBar"));
             return ret;
@@ -1076,8 +1079,8 @@ var ElevenDotJs;
             }
         }
         static close(dialogId) {
-            ElevenDotJs.NodeUtil.detachElement(dialogId);
-            ElevenDotJs.NodeUtil.detachElement(dialogId + "_overlay");
+            _11dotjs.NodeUtil.detachElement(dialogId);
+            _11dotjs.NodeUtil.detachElement(dialogId + "_overlay");
         }
         // chat GPT 2024-06-22
         static applyOffset(styleLeft, styleTop, offsetX, offsetY) {
@@ -1094,10 +1097,10 @@ var ElevenDotJs;
             };
         }
     }
-    ElevenDotJs.Dialog = Dialog;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
+    _11dotjs.Dialog = Dialog;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
     class Animation {
         static byDuration(task, durationMs, fps) {
             const start = performance.now();
@@ -1140,30 +1143,30 @@ var ElevenDotJs;
             requestAnimationFrame(animationStep);
         }
     }
-    ElevenDotJs.Animation = Animation;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
+    _11dotjs.Animation = Animation;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
     class ColorPalette {
-        constructor(color, callback, componentId) {
+        constructor(color, callback, componentId, modal) {
             this.imageCache = new Map();
             this.markerLocation = null;
             this.clickedLocation = null;
             this.callback = callback;
             this.componentId = componentId;
             if (!this.componentId) {
-                this.componentId = "ElevenDotJs.colorPalette";
+                this.componentId = "_11dotjs.colorPalette";
             }
             let canvas = this.getTheRenderCanvas();
             if (!canvas) {
                 let clientAreaId = this.componentId + "_dialogClientArea";
-                let dialog = new ElevenDotJs.Dialog({
-                    "modal": false,
+                let dialog = new _11dotjs.Dialog({
+                    "modal": modal,
                     "parent": document.body,
                     "title": "Intuitive Color Palette",
                     "dialogId": this.componentId + "_colorPaletteDialog",
                     "clientAreaId": clientAreaId,
-                    "position": ElevenDotJs.DialogPosition.center
+                    "position": _11dotjs.DialogPosition.center
                 });
                 this.createUi(document.getElementById(clientAreaId));
                 canvas = this.getTheRenderCanvas();
@@ -1178,8 +1181,8 @@ var ElevenDotJs;
                 let controlsParent = document.getElementById(this.componentId + "_controls_parent");
                 if (controlsParent) {
                     // Add an experimental button to save the image
-                    this.objectStorage = new ElevenDotJs.ObjectStorage({
-                        "operation": ElevenDotJs.ObjectStorageOperation.write,
+                    this.objectStorage = new _11dotjs.ObjectStorage({
+                        "operation": _11dotjs.ObjectStorageOperation.write,
                         "parent": controlsParent,
                         "label": "Click here to save the image: ",
                         "callback": (payload) => { console.log(`Write ${payload}`); }
@@ -1232,7 +1235,7 @@ var ElevenDotJs;
                                         "style": "width:64px; vertical-align: top",
                                         "input_r": {
                                             "type": "number",
-                                            "style": `color:red; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:red; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_redByte",
                                             min: 0,
                                             max: 255,
@@ -1241,7 +1244,7 @@ var ElevenDotJs;
                                         "br_1": null,
                                         "input_g": {
                                             "type": "number",
-                                            "style": `color:green; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:green; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_greenByte",
                                             min: 0,
                                             max: 255,
@@ -1250,7 +1253,7 @@ var ElevenDotJs;
                                         "br_2": null,
                                         "input_b": {
                                             "type": "number",
-                                            "style": `color:blue; font-family: ${ElevenDotJs.defaultFont};`,
+                                            "style": `color:blue; font-family: ${_11dotjs.defaultFont};`,
                                             "id": this.componentId + "_blueByte",
                                             min: 0,
                                             max: 255,
@@ -1259,7 +1262,7 @@ var ElevenDotJs;
                                         "br_3": null,
                                         "span": {
                                             "id": this.componentId + "_controls_parent" //,
-                                            //"onclick": () => { ElevenDotJs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
+                                            //"onclick": () => { _11dotjs.ObjectStorage.experiment( this.getTheRenderCanvas() ) }
                                         }
                                     }
                                 ]
@@ -1279,7 +1282,7 @@ var ElevenDotJs;
                     }
                 }
             };
-            ElevenDotJs.DocComposer.compose(ui, parent);
+            _11dotjs.DocComposer.compose(ui, parent);
         }
         configure(canvas) {
             canvas.addEventListener('click', this.handleMouseClick.bind(this));
@@ -1338,7 +1341,7 @@ var ElevenDotJs;
                     let sy = canvas.height / palette.height;
                     let palette2 = VisImage.fromImageData(palette).cropImageToContent();
                     let palette3 = palette2.scale(canvas.width, canvas.height);
-                    ctx.font = `1em ${ElevenDotJs.defaultFont}`;
+                    ctx.font = `1em ${_11dotjs.defaultFont}`;
                     ctx.putImageData(palette3.getImageData(), 0, 0);
                     this.showLuminanceLabel(ctx, luminance);
                     if (this.objectStorage) {
@@ -1475,9 +1478,9 @@ var ElevenDotJs;
         }
     }
     ColorPalette.rgbCanvasFill = null;
-    ElevenDotJs.ColorPalette = ColorPalette;
+    _11dotjs.ColorPalette = ColorPalette;
     //export var colorPalette = new ColorPalette();
-})(ElevenDotJs || (ElevenDotJs = {}));
+})(_11dotjs || (_11dotjs = {}));
 /* Generated from Java with JSweet 3.1.0 - http://www.jsweet.org */
 var Axis;
 (function (Axis) {
@@ -2271,16 +2274,16 @@ function webGlHello() {
 }
 // Execute the main function
 //main();
-var ElevenDotJs;
-(function (ElevenDotJs) {
+var _11dotjs;
+(function (_11dotjs) {
     let ObjectStorageOperation;
     (function (ObjectStorageOperation) {
         ObjectStorageOperation[ObjectStorageOperation["read"] = 1] = "read";
         ObjectStorageOperation[ObjectStorageOperation["write"] = 2] = "write";
-    })(ObjectStorageOperation = ElevenDotJs.ObjectStorageOperation || (ElevenDotJs.ObjectStorageOperation = {}));
+    })(ObjectStorageOperation = _11dotjs.ObjectStorageOperation || (_11dotjs.ObjectStorageOperation = {}));
     class ObjectStorageConfig {
     }
-    ElevenDotJs.ObjectStorageConfig = ObjectStorageConfig;
+    _11dotjs.ObjectStorageConfig = ObjectStorageConfig;
     class ObjectStorage {
         constructor(config, componentId, writePayload) {
             this.readPayload = null;
@@ -2293,18 +2296,18 @@ var ElevenDotJs;
             let ui = {
                 "label": {
                     "text": this.config.label,
-                    "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                    "style": `font-family: ${_11dotjs.defaultFont};`,
                     "input": {
                         "id": this.inputElementId(),
                         "type": "file",
                         "title": this.config.tooltip,
                         "accept": this.config.accept,
                         "multiple": this.config.multiple,
-                        "style": `font-family: ${ElevenDotJs.defaultFont};`,
+                        "style": `font-family: ${_11dotjs.defaultFont};`,
                     }
                 }
             };
-            ElevenDotJs.DocComposer.compose(ui, this.config.parent);
+            _11dotjs.DocComposer.compose(ui, this.config.parent);
             this.inputElement().addEventListener("input", this.inputHandler());
         }
         inputElementId() {
@@ -2362,22 +2365,7 @@ var ElevenDotJs;
                 let json = JSON.stringify(this.writePayload);
                 let file = ev.target.files[0];
                 try {
-                    // Create a new blob with the JSON data
-                    let blob = new Blob([json], { type: 'application/json' });
-                    // Create a link element
-                    let link = document.createElement('a');
-                    // Create a URL for the blob and set it as the href attribute
-                    link.href = URL.createObjectURL(blob);
-                    // Set the download attribute with the original file name
-                    link.download = file.name;
-                    // Append the link to the body (necessary for Firefox)
-                    document.body.appendChild(link);
-                    // Programmatically click the link to trigger the download
-                    link.click();
-                    // Clean up the URL object
-                    URL.revokeObjectURL(link.href);
-                    // Remove the link from the document
-                    document.body.removeChild(link);
+                    ObjectStorage.downloadJson(json, file.name);
                     console.log("File written successfully");
                 }
                 catch (error) {
@@ -2385,17 +2373,39 @@ var ElevenDotJs;
                 }
             }
             else {
-                console.log("ElevenDotJs.ObjectStorage.writeFile: no payload!");
+                console.log("_11dotjs.ObjectStorage.writeFile: no payload!");
             }
         }
         setPayload(payload) {
             this.writePayload = payload;
         }
+        static downloadObject(payload, name) {
+            let json = JSON.stringify(payload);
+            ObjectStorage.downloadJson(json, name);
+        }
+        static downloadJson(json, name) {
+            // Create a new blob with the JSON data
+            let blob = new Blob([json], { type: 'application/json' });
+            // Create a link element
+            let link = document.createElement('a');
+            // Create a URL for the blob and set it as the href attribute
+            link.href = URL.createObjectURL(blob);
+            // Set the download attribute with the original file name
+            link.download = name;
+            // Append the link to the body (necessary for Firefox)
+            document.body.appendChild(link);
+            // Programmatically click the link to trigger the download
+            link.click();
+            // Clean up the URL object
+            URL.revokeObjectURL(link.href);
+            // Remove the link from the document
+            document.body.removeChild(link);
+        }
     }
-    ElevenDotJs.ObjectStorage = ObjectStorage;
-})(ElevenDotJs || (ElevenDotJs = {}));
-var ElevenDotJs;
-(function (ElevenDotJs) {
+    _11dotjs.ObjectStorage = ObjectStorage;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
     class Demo {
         //
         // This is a Demonstration of using 11dotjs to make a demonstration of 11dotjs!
@@ -2404,12 +2414,12 @@ var ElevenDotJs;
             // Get the code of this demo to show in the center pane.
             const body = document.body;
             body.style.fontFamily = "Inter";
-            ElevenDotJs.DocComposer.compose(Demo.layoutTable(), body);
+            _11dotjs.DocComposer.compose(Demo.layoutTable(), body);
             // Reconfigure the top row
-            let td00 = ElevenDotJs.Tables.getCellElement(Demo.componentId, 0, 0);
+            let td00 = _11dotjs.Tables.getCellElement(Demo.componentId, 0, 0);
             td00.colSpan = 2;
             td00.nextSibling.remove();
-            ElevenDotJs.DocComposer.compose({
+            _11dotjs.DocComposer.compose({
                 "head": {
                     "link": [
                         {
@@ -2436,46 +2446,80 @@ var ElevenDotJs;
                         "td": {
                             "div": {
                                 "style": "font-size: 1.25em; text-align:center;",
-                                "text": "You => JSON => DocComposer => Document"
+                                "text": "Author => JSON.parse => DocComposer => Document"
                             }
                         }
                     }
                 }
             }, td00);
             // Create the code panel
-            let tdCode = ElevenDotJs.Tables.getCellElement(Demo.componentId, 1, 0);
+            let tdCode = _11dotjs.Tables.getCellElement(Demo.componentId, 1, 0);
             tdCode.innerHTML = null;
-            // Use a div for best scrolling UX
-            ElevenDotJs.DocComposer.compose({
+            tdCode.style.width = "40%";
+            _11dotjs.DocComposer.compose({
+                "textarea": {
+                    "id": Demo.idOfTextArea(),
+                    "style": `margin-top: 0.5em; color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; 
+                    white-space: nowrap; font-family: Roboto Mono; font-size: small; width:auto`,
+                    "rows": 30,
+                    "cols": 96,
+                    "spellcheck": false,
+                    "text": Demo.defaultGuiJson(),
+                    "oninput": "_11dotjs.Demo.renderPreview( event )"
+                },
+                "br_2": null,
                 "label": {
-                    "text": "Show the HTML",
                     "input": {
                         "id": Demo.idOfShowHtmlCheckBox(),
                         "type": "checkbox",
-                        "onchange": "ElevenDotJs.Demo.onChangeShowHtml( event )"
-                    }
+                        "onchange": "_11dotjs.Demo.onChangeShowHtml( event )"
+                    },
+                    "text": "Show the HTML"
                 },
-                "br": null,
-                "textarea": {
-                    "id": Demo.componentId + "_textArea",
-                    "style": "margin-top: 0.5em; color: RGB(180, 180, 180); background-color: RGB(11,11,11);overflow-x: auto; white-space: nowrap; font-family: Roboto Mono; font-size: small",
-                    "rows": 40,
-                    "cols": 80,
-                    "spellcheck": false,
-                    "text": Demo.defaultGuiJson(),
-                    "oninput": "ElevenDotJs.Demo.renderPreview( event )"
+                "span": {
+                    "style": "margin-left: 1.5em",
+                    "text": "JSON.parse",
+                    "id": Demo.idOfParseIndicator(),
+                },
+                "span_2": {
+                    "style": "margin-left: 1.5em",
+                    "text": "DocComposer",
+                    "id": Demo.idOfComposerIndicator(),
+                },
+                "a": {
+                    "text": "Download this JSON",
+                    "style": "margin-left: 1.5em",
+                    "href": "#",
+                    "onclick": `_11dotjs.ObjectStorage.downloadJson(
+                        _11dotjs.Demo.textArea().value, 
+                        '${Demo.downloadFileName}'
+                    );`
                 }
             }, tdCode);
             Demo.taCode = Demo.textArea();
+            Demo.configureTextAreaForTabInsertion(Demo.taCode);
             Demo.renderPreview(null);
             // Center the layout table
-            let table = ElevenDotJs.NodeUtil.firstParent(td00, "TABLE");
+            let table = _11dotjs.NodeUtil.firstParent(td00, "TABLE");
             if (table) {
                 let tEl = table;
                 tEl.style.margin = "auto";
+                tEl.style.width = "96%";
             }
             // Create a dark mood
             body.style.backgroundColor = "black";
+        }
+        static idOfParseIndicator() {
+            return Demo.componentId + "_parseIndicator";
+        }
+        static idOfComposerIndicator() {
+            return Demo.componentId + "_composerIndicator";
+        }
+        static parseIndicator() {
+            return document.getElementById(Demo.idOfParseIndicator());
+        }
+        static composerIndicator() {
+            return document.getElementById(Demo.idOfComposerIndicator());
         }
         static idOfShowHtmlCheckBox() {
             return Demo.componentId + "_cbHtml";
@@ -2484,15 +2528,76 @@ var ElevenDotJs;
             return document.getElementById(Demo.idOfShowHtmlCheckBox());
         }
         static textArea() {
-            return document.getElementById(Demo.componentId + "_textArea");
+            let ret = document.getElementById(Demo.idOfTextArea());
+            return ret;
+        }
+        static idOfTextArea() {
+            let ret = `${Demo.componentId}_textArea`;
+            return ret;
         }
         static renderPreview(event) {
             // Preview the GUI in the right-hand panel
-            let tdPv = ElevenDotJs.Tables.getCellElement(Demo.componentId, 1, 1);
+            let json = (event) ? event.target.value : Demo.taCode.value;
+            let o = null;
+            try {
+                o = JSON.parse(json);
+            }
+            catch (msg) {
+                Demo.showParseError(true, msg.toString());
+                return;
+            }
+            Demo.showParseError(false, null);
+            let n = null;
+            try {
+                n = _11dotjs.DocComposer.compose(o, null);
+            }
+            catch (msg) {
+                Demo.showDocComposerError(true, msg);
+                return;
+            }
+            let tdPv = _11dotjs.Tables.getCellElement(Demo.componentId, 1, 1);
             tdPv.innerHTML = null;
-            let json = (event) ? event.target.value : Demo.taCode.innerHTML;
-            let o = JSON.parse(json);
-            ElevenDotJs.DocComposer.compose(o, tdPv);
+            tdPv.appendChild(n);
+            Demo.showDocComposerError(false, null);
+        }
+        static showDocComposerError(composeFailure, msg) {
+            let span = Demo.composerIndicator();
+            if (composeFailure) {
+                span.style.color = Demo.rgbErrorIndicator;
+                span.innerHTML = `DocComposer: ${msg}`;
+            }
+            else {
+                span.style.color = Demo.rgbOkIndicator;
+                span.innerHTML = `DocComposer`;
+            }
+        }
+        static showParseError(parseFailure, msg) {
+            let span = Demo.parseIndicator();
+            if (parseFailure) {
+                span.style.color = Demo.rgbErrorIndicator;
+                span.innerHTML = `JSON.parse: ${msg}`;
+                Demo.highlightJsonError(Demo.textArea(), msg);
+            }
+            else {
+                span.style.color = Demo.rgbOkIndicator;
+                span.innerHTML = `JSON.parse`;
+            }
+            span.style.color = (parseFailure) ? Demo.rgbErrorIndicator : Demo.rgbOkIndicator;
+        }
+        // gpt but fixed by me. GPT had an off-by-one error, lol, and the scroll piece did not work
+        static highlightJsonError(textarea, msg) {
+            const jsonText = textarea.value;
+            const match = msg.match(/position (\d+)/);
+            if (match) {
+                const position = parseInt(match[1], 10);
+                // Convert position to line and column
+                const lines = jsonText.substring(0, position).split("\n");
+                const lineNumber = lines.length;
+                const columnNumber = lines[lines.length - 1].length + 1;
+                // Move cursor to the error position
+                textarea.focus();
+                textarea.setSelectionRange(position, position + 1);
+            }
         }
         static onChangeShowHtml(event) {
             if (event.target.checked) {
@@ -2503,39 +2608,59 @@ var ElevenDotJs;
             }
         }
         static hideHtml() {
-            ElevenDotJs.NodeUtil.detachElement(Demo.idOfHtmlDialog());
+            _11dotjs.NodeUtil.detachElement(Demo.idOfHtmlDialog());
         }
         static showHtml() {
             let ta = Demo.textArea();
             let json = ta.value;
             let o = JSON.parse(json);
-            let doc = ElevenDotJs.DocComposer.compose(o, null);
+            let doc = _11dotjs.DocComposer.compose(o, null);
             let html = doc.outerHTML; // not formatted )`.
             //alert(html);
             let clientAreaId = this.componentId + "_dialogClientArea";
-            let dialog = new ElevenDotJs.Dialog({
+            let dialog = new _11dotjs.Dialog({
                 "modal": false,
                 "parent": document.body,
                 "title": "HTML",
                 "dialogId": Demo.idOfHtmlDialog(),
                 "clientAreaId": clientAreaId,
-                "position": ElevenDotJs.DialogPosition.center
+                "position": _11dotjs.DialogPosition.center
             });
             let parent = document.getElementById(clientAreaId);
-            ElevenDotJs.DocComposer.compose({
+            _11dotjs.DocComposer.compose({
                 "div": {
                     "style": `
                             max-width: 30em; 
                             overflow: auto; 
                             font-family: Roboto Mono; 
                             font-size: small`,
-                    "text": html
+                    "text": html,
+                    "id": this.componentId + "_divHtml"
+                },
+                "button": {
+                    "style": "margin-top: 0.5em; float: right",
+                    "text": "Select All",
+                    "onclick": `_11dotjs.Demo.selectText( '${this.componentId}_divHtml' );`
                 }
             }, parent);
             dialog.setPosition();
             let closeIcon = dialog.closeIcon();
             if (closeIcon) {
                 closeIcon.addEventListener("click", () => { this.showHtmlCheckBox().checked = false; });
+            }
+        }
+        static selectText(id) {
+            let div = document.getElementById(id);
+            if (div) {
+                // Create a Range object
+                const range = document.createRange();
+                // Select the text inside the <div>
+                range.selectNodeContents(div);
+                // Clear any existing selections
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                // Add the newly created range to the selection
+                selection.addRange(range);
             }
         }
         static idOfHtmlDialog() {
@@ -2545,42 +2670,50 @@ var ElevenDotJs;
             return document.getElementById(Demo.idOfHtmlDialog());
         }
         static defaultGuiJson() {
-            let o = {
-                "head": {
-                    "link": [
-                        {
-                            "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
-                            "rel": "stylesheet"
-                        },
-                        {
-                            "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
-                            "rel": "stylesheet"
-                        }
-                    ]
-                },
-                "div": {
-                    "style": "width: 40em; font-family: Inter; ",
-                    "p": {
-                        "text": `Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model 
-                        based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update.`
-                    },
-                    "iframe": {
-                        "width": 640,
-                        "height": 360,
-                        "src": "https://www.youtube.com/embed/ZrcVIwgysBE?si=HAlOtYElcWcMyB1f",
-                        "title": "YouTube video player",
-                        "frameborder": 0,
-                        "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                        "referrerpolicy": "strict-origin-when-cross-origin",
-                        "allowfullscreen": true
-                    }
-                }
-            };
-            let ret = JSON.stringify(o, null, 4);
+            let ret = `{
+    "div": {
+        "div": {
+            "style": "width: 40em; font-family: Inter; ",
+            "p": {
+                "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
+            },
+            "iframe": {
+                "src": "https://www.youtube.com/embed/ZrcVIwgysBE",
+                "width": 374,
+                "height": 210,
+                "title": "YouTube video player",
+                "frameborder": 0,
+                "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+                "referrerpolicy": "strict-origin-when-cross-origin",
+                "allowfullscreen": true
+            },
+            "br": null, "br_": null,
+            "text": "more demos: ",
+            "a": {
+                "text": "Intuitive Color Palette",
+                "href": "#",
+                "onclick": "_11dotjs.Demo.colorPaletteDemo();"
+            },
+            "span": { "text": " . " },
+            "a_2": {
+                "text": "Modal Dialog",
+                "href": "#",
+                "onclick": "_11dotjs.Demo.modalDialog();"
+            },
+            "br_2": null, "br_3": null,
+            "text_2": "links: ",
+            "a_9": {
+                "text": "11dotjs on GitHub",
+                "href": "https://github.com/elisokal/11dotjs"
+            }
+        }
+    }
+}`;
+            //let ret = JSON.stringify( o, null, 4 );
             return ret;
         }
         static layoutTable() {
-            const ret = ElevenDotJs.Tables.generate({
+            const ret = _11dotjs.Tables.generate({
                 "componentId": Demo.componentId,
                 "hasHeader": false,
                 "rowCount": 2,
@@ -2591,17 +2724,47 @@ var ElevenDotJs;
             return ret;
         }
         static colorPaletteDemo() {
-            new ElevenDotJs.ColorPalette(new RGB(0, 0, 160), (color) => {
+            new _11dotjs.ColorPalette(new RGB(0, 0, 160), (color) => {
                 //document.body.style.backgroundColor = color.css;
-                let table = ElevenDotJs.NodeUtil.firstParent(ElevenDotJs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
+                let table = _11dotjs.NodeUtil.firstParent(_11dotjs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
                 for (let td of Array.from(table.querySelectorAll("td"))) {
                     if (td.id) {
-                        td.style.border = `1em solid ${color.css}`;
+                        td.style.border = `0.7em solid ${color.css}`;
                     }
                 }
             }, 'colorPalette1');
         }
+        static modalDialog() {
+            new _11dotjs.ColorPalette(new RGB(0, 0, 160), (color) => {
+                //document.body.style.backgroundColor = color.css;
+                let table = _11dotjs.NodeUtil.firstParent(_11dotjs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
+                for (let td of Array.from(table.querySelectorAll("td"))) {
+                    if (td.id) {
+                        td.style.border = `0.7em solid ${color.css}`;
+                    }
+                }
+            }, 'colorPalette1', true);
+        }
+        // gpt
+        static configureTextAreaForTabInsertion(textarea) {
+            textarea.style.tabSize = "4";
+            textarea.addEventListener('keydown', function (event) {
+                if (event.key === 'Tab') {
+                    event.preventDefault();
+                    // Get the current position of the cursor
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    // Set the value with the tab inserted at the cursor's position
+                    textarea.value = textarea.value.substring(0, start) + '\t' + textarea.value.substring(end);
+                    // Move the cursor to the position right after the inserted tab
+                    textarea.selectionStart = textarea.selectionEnd = start + 1;
+                }
+            });
+        }
     }
     Demo.componentId = "11dotjsDemo";
-    ElevenDotJs.Demo = Demo;
-})(ElevenDotJs || (ElevenDotJs = {}));
+    Demo.downloadFileName = 'DocComposerDemo.json';
+    Demo.rgbOkIndicator = "RGB(11,121,11)";
+    Demo.rgbErrorIndicator = "RGB(176,11,11)";
+    _11dotjs.Demo = Demo;
+})(_11dotjs || (_11dotjs = {}));
