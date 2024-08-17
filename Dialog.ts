@@ -1,5 +1,5 @@
 namespace _11dotjs {
-    export const defaultFont = "consolas";
+    export const defaultFont = "Inter";
     export enum DialogPosition {
         center = 1
     }

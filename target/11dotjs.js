@@ -16,681 +16,702 @@ var _11dotjs;
     }
     _11dotjs.NodeUtil = NodeUtil;
 })(_11dotjs || (_11dotjs = {}));
-class VisImage {
-    constructor(width, height, data) {
-        //super( width, height );
-        this.imd = new ImageData(width, height);
-        this.imd.data.set(data);
-    }
-    getImageData() {
-        return this.imd;
-    }
-    getWidth() {
-        return this.imd.width;
-    }
-    getHeight() {
-        return this.imd.height;
-    }
-    getData() {
-        return this.imd.data;
-    }
-    static fromImageData(imageData) {
-        let ret = new VisImage(imageData.width, imageData.height, imageData.data);
-        return ret;
-    }
-    static fromDimensions(width, height) {
-        let ret = new VisImage(width, height, new Uint8ClampedArray(0));
-        return ret;
-    }
-    setRGB(col, row, rgb) {
-        let index = 4 * (row * this.imd.width + col);
-        this.imd.data[index] = rgb.getR();
-        this.imd.data[index + 1] = rgb.getG();
-        this.imd.data[index + 2] = rgb.getB();
-        this.imd.data[index + 3] = rgb.getA();
-    }
-    getRGB(col, row) {
-        let index = 4 * (row * this.imd.width + col);
-        const ret = new RGB(this.imd.data[index], this.imd.data[index + 1], this.imd.data[index + 2]);
-        return ret;
-    }
-    scale(newWidth, newHeight) {
-        // Create an off-screen canvas
-        const offScreenCanvas = document.createElement('canvas');
-        const offScreenCtx = offScreenCanvas.getContext('2d');
-        if (!offScreenCtx) {
-            throw new Error('Could not get 2D context');
+var _11dotjs;
+(function (_11dotjs) {
+    class VisImage {
+        constructor(width, height, data) {
+            //super( width, height );
+            this.imd = new ImageData(width, height);
+            this.imd.data.set(data);
         }
-        // Set the canvas size to the new dimensions
-        offScreenCanvas.width = newWidth;
-        offScreenCanvas.height = newHeight;
-        // Draw the original VisImage onto the canvas
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        if (!tempCtx) {
-            throw new Error('Could not get 2D context');
+        getImageData() {
+            return this.imd;
         }
-        tempCanvas.width = this.imd.width;
-        tempCanvas.height = this.imd.height;
-        tempCtx.putImageData(this.imd, 0, 0);
-        // Draw the scaled image onto the off-screen canvas
-        offScreenCtx.drawImage(tempCanvas, 0, 0, this.imd.width, this.imd.height, 0, 0, newWidth, newHeight);
-        // Get the scaled VisImage
-        const scaledImageData = VisImage.fromImageData(offScreenCtx.getImageData(0, 0, newWidth, newHeight));
-        return scaledImageData;
-    }
-    // Find exact color match
-    findColor(color) {
-        const id = this.getImageData();
-        for (let row = 0; row < id.height; row++) {
-            for (let col = 0; col < id.width; col++) {
-                const rgb = this.getRGB(col, row);
-                if (rgb.equals(color)) {
-                    return new ColRow(col, row);
+        getWidth() {
+            return this.imd.width;
+        }
+        getHeight() {
+            return this.imd.height;
+        }
+        getData() {
+            return this.imd.data;
+        }
+        static fromImageData(imageData) {
+            let ret = new VisImage(imageData.width, imageData.height, imageData.data);
+            return ret;
+        }
+        static fromDimensions(width, height) {
+            let ret = new VisImage(width, height, new Uint8ClampedArray(0));
+            return ret;
+        }
+        setRGB(col, row, rgb) {
+            let index = 4 * (row * this.imd.width + col);
+            this.imd.data[index] = rgb.getR();
+            this.imd.data[index + 1] = rgb.getG();
+            this.imd.data[index + 2] = rgb.getB();
+            this.imd.data[index + 3] = rgb.getA();
+        }
+        getRGB(col, row) {
+            let index = 4 * (row * this.imd.width + col);
+            const ret = new _11dotjs.RGB(this.imd.data[index], this.imd.data[index + 1], this.imd.data[index + 2]);
+            return ret;
+        }
+        scale(newWidth, newHeight) {
+            // Create an off-screen canvas
+            const offScreenCanvas = document.createElement('canvas');
+            const offScreenCtx = offScreenCanvas.getContext('2d');
+            if (!offScreenCtx) {
+                throw new Error('Could not get 2D context');
+            }
+            // Set the canvas size to the new dimensions
+            offScreenCanvas.width = newWidth;
+            offScreenCanvas.height = newHeight;
+            // Draw the original VisImage onto the canvas
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            if (!tempCtx) {
+                throw new Error('Could not get 2D context');
+            }
+            tempCanvas.width = this.imd.width;
+            tempCanvas.height = this.imd.height;
+            tempCtx.putImageData(this.imd, 0, 0);
+            // Draw the scaled image onto the off-screen canvas
+            offScreenCtx.drawImage(tempCanvas, 0, 0, this.imd.width, this.imd.height, 0, 0, newWidth, newHeight);
+            // Get the scaled VisImage
+            const scaledImageData = VisImage.fromImageData(offScreenCtx.getImageData(0, 0, newWidth, newHeight));
+            return scaledImageData;
+        }
+        // Find exact color match
+        findColor(color) {
+            const id = this.getImageData();
+            for (let row = 0; row < id.height; row++) {
+                for (let col = 0; col < id.width; col++) {
+                    const rgb = this.getRGB(col, row);
+                    if (rgb.equals(color)) {
+                        return new ColRow(col, row);
+                    }
                 }
             }
+            return null;
         }
-        return null;
-    }
-    // Find with an error tolerance. To be used only when findColor fails.
-    findColorApproximate(color, tolerance) {
-        const id = this.getImageData();
-        for (let row = 0; row < id.height; row++) {
-            for (let col = 0; col < id.width; col++) {
-                const rgb = this.getRGB(col, row);
-                let error = rgb.error(color);
-                if (error <= tolerance) {
-                    return new ColRow(col, row);
+        // Find with an error tolerance. To be used only when findColor fails.
+        findColorApproximate(color, tolerance) {
+            const id = this.getImageData();
+            for (let row = 0; row < id.height; row++) {
+                for (let col = 0; col < id.width; col++) {
+                    const rgb = this.getRGB(col, row);
+                    let error = rgb.error(color);
+                    if (error <= tolerance) {
+                        return new ColRow(col, row);
+                    }
                 }
             }
+            return null;
         }
-        return null;
-    }
-    static toggleMarker(x, y, ctx) {
-        this.drawMarker(x, y, 8, ctx);
-    }
-    // GPT 2024-06-23 - I had to tell it to use bitwise inversion so we can toggle
-    static drawMarker(x, y, size, ctx) {
-        // Get the image data for the area around the click
-        const halfSize = Math.floor(size / 2);
-        const imageData = ctx.getImageData(x - halfSize, y - halfSize, size, size);
-        const data = imageData.data;
-        // Invert the colors along the diagonals to form an X
-        for (let i = 0; i < size; i++) {
-            const offset1 = (i * size + i) * 4;
-            const offset2 = ((size - i - 1) * size + i) * 4;
-            data[offset1] = ~data[offset1] & 0xFF; // Red
-            data[offset1 + 1] = ~data[offset1 + 1] & 0xFF; // Green
-            data[offset1 + 2] = ~data[offset1 + 2] & 0xFF; // Blue
-            // Alpha (data[offset1 + 3]) remains the same
-            data[offset2] = ~data[offset2] & 0xFF; // Red
-            data[offset2 + 1] = ~data[offset2 + 1] & 0xFF; // Green
-            data[offset2 + 2] = ~data[offset2 + 2] & 0xFF; // Blue
-            // Alpha (data[offset2 + 3]) remains the same
+        static toggleMarker(x, y, ctx) {
+            this.drawMarker(x, y, 8, ctx);
         }
-        // Put the image data back onto the canvas
-        ctx.putImageData(imageData, x - halfSize, y - halfSize);
-    }
-    // 
-    // Return a new image formed from the smallest rectangular subset of
-    // the input for which there is content. Content is defined as any
-    // pixel with non-zero alpha
-    //
-    cropImageToContent() {
-        const { width, height, data } = this.imd;
-        let top = height, left = width, right = 0, bottom = 0;
-        let foundContent = false;
-        // Iterate through each pixel to find the bounds of the content
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const index = (y * width + x) * 4;
-                const alpha = data[index + 3];
-                if (alpha > 0) {
-                    if (x < left)
-                        left = x;
-                    if (x > right)
-                        right = x;
-                    if (y < top)
-                        top = y;
-                    if (y > bottom)
-                        bottom = y;
-                    foundContent = true;
+        // GPT 2024-06-23 - I had to tell it to use bitwise inversion so we can toggle
+        static drawMarker(x, y, size, ctx) {
+            // Get the image data for the area around the click
+            const halfSize = Math.floor(size / 2);
+            const imageData = ctx.getImageData(x - halfSize, y - halfSize, size, size);
+            const data = imageData.data;
+            // Invert the colors along the diagonals to form an X
+            for (let i = 0; i < size; i++) {
+                const offset1 = (i * size + i) * 4;
+                const offset2 = ((size - i - 1) * size + i) * 4;
+                data[offset1] = ~data[offset1] & 0xFF; // Red
+                data[offset1 + 1] = ~data[offset1 + 1] & 0xFF; // Green
+                data[offset1 + 2] = ~data[offset1 + 2] & 0xFF; // Blue
+                // Alpha (data[offset1 + 3]) remains the same
+                data[offset2] = ~data[offset2] & 0xFF; // Red
+                data[offset2 + 1] = ~data[offset2 + 1] & 0xFF; // Green
+                data[offset2 + 2] = ~data[offset2 + 2] & 0xFF; // Blue
+                // Alpha (data[offset2 + 3]) remains the same
+            }
+            // Put the image data back onto the canvas
+            ctx.putImageData(imageData, x - halfSize, y - halfSize);
+        }
+        // 
+        // Return a new image formed from the smallest rectangular subset of
+        // the input for which there is content. Content is defined as any
+        // pixel with non-zero alpha
+        //
+        cropImageToContent() {
+            const { width, height, data } = this.imd;
+            let top = height, left = width, right = 0, bottom = 0;
+            let foundContent = false;
+            // Iterate through each pixel to find the bounds of the content
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const index = (y * width + x) * 4;
+                    const alpha = data[index + 3];
+                    if (alpha > 0) {
+                        if (x < left)
+                            left = x;
+                        if (x > right)
+                            right = x;
+                        if (y < top)
+                            top = y;
+                        if (y > bottom)
+                            bottom = y;
+                        foundContent = true;
+                    }
                 }
             }
+            // If no content found, return an empty VisImage
+            if (!foundContent) {
+                return VisImage.fromDimensions(1, 1);
+            }
+            // Calculate the width and height of the cropped area
+            const cropWidth = right - left + 1;
+            const cropHeight = bottom - top + 1;
+            // Create a new VisImage object for the cropped content
+            const croppedImageData = VisImage.fromDimensions(cropWidth, cropHeight);
+            const croppedData = croppedImageData.getData();
+            // Copy the content to the new VisImage
+            for (let y = top; y <= bottom; y++) {
+                for (let x = left; x <= right; x++) {
+                    const srcIndex = (y * width + x) * 4;
+                    const destIndex = ((y - top) * cropWidth + (x - left)) * 4;
+                    croppedData[destIndex] = data[srcIndex]; // R
+                    croppedData[destIndex + 1] = data[srcIndex + 1]; // G
+                    croppedData[destIndex + 2] = data[srcIndex + 2]; // B
+                    croppedData[destIndex + 3] = data[srcIndex + 3]; // A
+                }
+            }
+            return croppedImageData;
         }
-        // If no content found, return an empty VisImage
-        if (!foundContent) {
-            return VisImage.fromDimensions(1, 1);
+    }
+    _11dotjs.VisImage = VisImage;
+    class IntPair {
+        constructor(i1, i2) {
+            this.i1 = i1;
+            this.i2 = i2;
         }
-        // Calculate the width and height of the cropped area
-        const cropWidth = right - left + 1;
-        const cropHeight = bottom - top + 1;
-        // Create a new VisImage object for the cropped content
-        const croppedImageData = VisImage.fromDimensions(cropWidth, cropHeight);
-        const croppedData = croppedImageData.getData();
-        // Copy the content to the new VisImage
-        for (let y = top; y <= bottom; y++) {
-            for (let x = left; x <= right; x++) {
-                const srcIndex = (y * width + x) * 4;
-                const destIndex = ((y - top) * cropWidth + (x - left)) * 4;
-                croppedData[destIndex] = data[srcIndex]; // R
-                croppedData[destIndex + 1] = data[srcIndex + 1]; // G
-                croppedData[destIndex + 2] = data[srcIndex + 2]; // B
-                croppedData[destIndex + 3] = data[srcIndex + 3]; // A
+        fromOther(other) {
+            this.i1 = other.getI1();
+            this.i2 = other.getI2();
+        }
+        getI1() {
+            return this.i1;
+        }
+        getI2() {
+            return this.i2;
+        }
+        equals(other) {
+            let ret = false;
+            if (other != null) {
+                ret = (this.i1 == other.i1 && this.i2 == other.i2);
+            }
+            return ret;
+        }
+        dbgString() {
+            return `${this.i1} x ${this.i2}`;
+        }
+        isZero() {
+            return (this.i1 == 0 && this.i2 == 0);
+        }
+        floor(min) {
+            this.i1 = Math.max(this.i1, min);
+            this.i2 = Math.max(this.i2, min);
+        }
+        exists() {
+            let ret = this.i1 > 0 && this.i2 > 0;
+            return ret;
+        }
+        setI1(i1) {
+            this.i1 = i1;
+        }
+        setI2(i2) {
+            this.i2 = i2;
+        }
+        coerceToMinimum() {
+            let i = Math.min(this.i1, this.i2);
+            return new IntPair(i, i);
+        }
+        subtract(other) {
+            this.i1 -= other.getI1();
+            this.i2 -= other.getI2();
+        }
+    }
+    class ColRow extends IntPair {
+        constructor(col, row) {
+            super(col, row);
+        }
+        getCol() {
+            return super.getI1();
+        }
+        getRow() {
+            return super.getI2();
+        }
+        isValid(faster) {
+            if (this.getCol() < 0 || this.getRow() < 0) {
+                return false;
+            }
+            if (this.getCol() >= faster.getWidth() || this.getRow() >= faster.getHeight()) {
+                return false;
+            }
+            return true;
+        }
+        getAsIndex(width) {
+            const ret = 4 * (this.getCol() + this.getRow() * Math.floor(width));
+            return ret;
+        }
+    }
+    _11dotjs.ColRow = ColRow;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
+    let ColorFamily;
+    (function (ColorFamily) {
+        ColorFamily[ColorFamily["red"] = 0] = "red";
+        ColorFamily[ColorFamily["green"] = 1] = "green";
+        ColorFamily[ColorFamily["blue"] = 2] = "blue";
+    })(ColorFamily || (ColorFamily = {}));
+    let ExtractSearchDirection;
+    (function (ExtractSearchDirection) {
+        ExtractSearchDirection[ExtractSearchDirection["clockwise"] = 0] = "clockwise";
+        ExtractSearchDirection[ExtractSearchDirection["counterclockwise"] = 1] = "counterclockwise";
+    })(ExtractSearchDirection || (ExtractSearchDirection = {}));
+    class RGB {
+        equals(color) {
+            const ret = color.r == this.r && color.g == this.g && color.b == this.b && color.a == this.a;
+            return ret;
+        }
+        constructor(r, g, b) {
+            this.r = 0;
+            this.g = 0;
+            this.b = 0;
+            this.a = 255;
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        static fromPixel(pixel) {
+            return new RGB(Rgb.getPixelRed(pixel), Rgb.getPixelGreen(pixel), Rgb.getPixelBlue(pixel));
+        }
+        // Create an RGB from the likes of "RGB(1,1,1)"
+        static fromCss(cssColor) {
+            const regex = /^RGB\((\d+),\s*(\d+),\s*(\d+)\)$/i;
+            const match = cssColor.match(regex);
+            if (match) {
+                const r = parseInt(match[1], 10);
+                const g = parseInt(match[2], 10);
+                const b = parseInt(match[3], 10);
+                return new RGB(r, g, b);
+            }
+            return null;
+        }
+        getR() {
+            return this.r;
+        }
+        getG() {
+            return this.g;
+        }
+        getB() {
+            return this.b;
+        }
+        getA() {
+            return this.a;
+        }
+        getPixel() {
+            return Rgb.pixel(this.r, this.g, this.b, this.a);
+        }
+        sum() {
+            return (this.r + this.g + this.b);
+        }
+        validate() {
+            if (!(this.inRange(this.r) && this.inRange(this.g) && this.inRange(this.b))) {
+                throw this.dbgString();
             }
         }
-        return croppedImageData;
-    }
-}
-class IntPair {
-    constructor(i1, i2) {
-        this.i1 = i1;
-        this.i2 = i2;
-    }
-    fromOther(other) {
-        this.i1 = other.getI1();
-        this.i2 = other.getI2();
-    }
-    getI1() {
-        return this.i1;
-    }
-    getI2() {
-        return this.i2;
-    }
-    equals(other) {
-        let ret = false;
-        if (other != null) {
-            ret = (this.i1 == other.i1 && this.i2 == other.i2);
+        dbgString() {
+            return `ARBG(${this.a}, ${this.r}, $this.g}, ${this.b})`;
         }
-        return ret;
-    }
-    dbgString() {
-        return `${this.i1} x ${this.i2}`;
-    }
-    isZero() {
-        return (this.i1 == 0 && this.i2 == 0);
-    }
-    floor(min) {
-        this.i1 = Math.max(this.i1, min);
-        this.i2 = Math.max(this.i2, min);
-    }
-    exists() {
-        let ret = this.i1 > 0 && this.i2 > 0;
-        return ret;
-    }
-    setI1(i1) {
-        this.i1 = i1;
-    }
-    setI2(i2) {
-        this.i2 = i2;
-    }
-    coerceToMinimum() {
-        let i = Math.min(this.i1, this.i2);
-        return new IntPair(i, i);
-    }
-    subtract(other) {
-        this.i1 -= other.getI1();
-        this.i2 -= other.getI2();
-    }
-}
-class ColRow extends IntPair {
-    constructor(col, row) {
-        super(col, row);
-    }
-    getCol() {
-        return super.getI1();
-    }
-    getRow() {
-        return super.getI2();
-    }
-    isValid(faster) {
-        if (this.getCol() < 0 || this.getRow() < 0) {
-            return false;
+        cssString() {
+            return `RGB(${this.r}, ${this.g}, ${this.b})`;
         }
-        if (this.getCol() >= faster.getWidth() || this.getRow() >= faster.getHeight()) {
-            return false;
+        inRange(iColorByte) {
+            return (iColorByte > -1 && iColorByte < 256);
         }
-        return true;
-    }
-    getAsIndex(width) {
-        const ret = 4 * (this.getCol() + this.getRow() * Math.floor(width));
-        return ret;
-    }
-}
-// rgb.ts
-var ColorFamily;
-(function (ColorFamily) {
-    ColorFamily[ColorFamily["red"] = 0] = "red";
-    ColorFamily[ColorFamily["green"] = 1] = "green";
-    ColorFamily[ColorFamily["blue"] = 2] = "blue";
-})(ColorFamily || (ColorFamily = {}));
-var ExtractSearchDirection;
-(function (ExtractSearchDirection) {
-    ExtractSearchDirection[ExtractSearchDirection["clockwise"] = 0] = "clockwise";
-    ExtractSearchDirection[ExtractSearchDirection["counterclockwise"] = 1] = "counterclockwise";
-})(ExtractSearchDirection || (ExtractSearchDirection = {}));
-class RGB {
-    equals(color) {
-        const ret = color.r == this.r && color.g == this.g && color.b == this.b && color.a == this.a;
-        return ret;
-    }
-    constructor(r, g, b) {
-        this.r = 0;
-        this.g = 0;
-        this.b = 0;
-        this.a = 255;
-        this.r = r;
-        this.g = g;
-        this.b = b;
-    }
-    static fromPixel(pixel) {
-        return new RGB(Rgb.getPixelRed(pixel), Rgb.getPixelGreen(pixel), Rgb.getPixelBlue(pixel));
-    }
-    getR() {
-        return this.r;
-    }
-    getG() {
-        return this.g;
-    }
-    getB() {
-        return this.b;
-    }
-    getA() {
-        return this.a;
-    }
-    getPixel() {
-        return Rgb.pixel(this.r, this.g, this.b, this.a);
-    }
-    sum() {
-        return (this.r + this.g + this.b);
-    }
-    validate() {
-        if (!(this.inRange(this.r) && this.inRange(this.g) && this.inRange(this.b))) {
-            throw this.dbgString();
+        fillCanvas(canvas) {
+            const ctx = canvas.getContext("2d");
+            const css = `rgb(${this.r}, ${this.g}, ${this.b})`;
+            ctx.fillStyle = css;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        toString() {
+            return `RBGA( ${this.r}, ${this.g}, ${this.b}, ${this.a} )`;
+        }
+        setA(a) {
+            this.a = a;
+        }
+        luminance() {
+            const ret = this.sum() / (255 * 3);
+            return ret;
+        }
+        error(color) {
+            let ret = 0;
+            ret += Math.abs(color.r - this.r);
+            ret += Math.abs(color.g - this.g);
+            ret += Math.abs(color.b - this.b);
+            return ret;
         }
     }
-    dbgString() {
-        return `ARBG(${this.a}, ${this.r}, $this.g}, ${this.b})`;
-    }
-    cssString() {
-        return `RGB(${this.r}, ${this.g}, ${this.b})`;
-    }
-    inRange(iColorByte) {
-        return (iColorByte > -1 && iColorByte < 256);
-    }
-    fillCanvas(canvas) {
-        const ctx = canvas.getContext("2d");
-        const css = `rgb(${this.r}, ${this.g}, ${this.b})`;
-        ctx.fillStyle = css;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-    toString() {
-        return `RBGA( ${this.r}, ${this.g}, ${this.b}, ${this.a} )`;
-    }
-    setA(a) {
-        this.a = a;
-    }
-    luminance() {
-        const ret = this.sum() / (255 * 3);
-        return ret;
-    }
-    error(color) {
-        let ret = 0;
-        ret += Math.abs(color.r - this.r);
-        ret += Math.abs(color.g - this.g);
-        ret += Math.abs(color.b - this.b);
-        return ret;
-    }
-}
-class Deltas {
-    constructor() {
-        this.deltas = [];
-        let nok = 0, nnok = 0, noor = 0;
-        for (let dr = Deltas.minDelta; dr <= Deltas.maxDelta; dr++) {
-            for (let dg = Deltas.minDelta; dg <= Deltas.maxDelta; dg++) {
-                let db = -(dr + dg);
-                let test = dr + dg + db;
-                if (test !== 0) {
-                    this.nop();
-                    nnok++;
-                }
-                else {
-                    if (this.deltaInRange(dr, dg, db)) {
-                        nok++;
-                        this.deltas.push([dr, dg, db]);
+    _11dotjs.RGB = RGB;
+    class Deltas {
+        constructor() {
+            this.deltas = [];
+            let nok = 0, nnok = 0, noor = 0;
+            for (let dr = Deltas.minDelta; dr <= Deltas.maxDelta; dr++) {
+                for (let dg = Deltas.minDelta; dg <= Deltas.maxDelta; dg++) {
+                    let db = -(dr + dg);
+                    let test = dr + dg + db;
+                    if (test !== 0) {
+                        this.nop();
+                        nnok++;
                     }
                     else {
-                        noor++;
+                        if (this.deltaInRange(dr, dg, db)) {
+                            nok++;
+                            this.deltas.push([dr, dg, db]);
+                        }
+                        else {
+                            noor++;
+                        }
                     }
                 }
             }
+            this.nop();
         }
-        this.nop();
-    }
-    deltaInRange(dr, dg, db) {
-        return this.deltaInRange2(dr) && this.deltaInRange2(dg) && this.deltaInRange2(db);
-    }
-    deltaInRange2(dr) {
-        return dr > -256 && dr < 256;
-    }
-    rgbInRange(dr, dg, db) {
-        return this.rgbInRange2(dr) && this.rgbInRange2(dg) && this.rgbInRange2(db);
-    }
-    rgbInRange2(dr) {
-        return dr > -1 && dr < 256;
-    }
-    applyTo(test) {
-        let sumTest = test.sum();
-        let ret = [];
-        for (let delta of this.deltas) {
-            let rgb = this.applyTo2(test, delta);
-            if (rgb !== null) {
-                let sumNew = rgb.sum();
-                if (sumNew !== sumTest) {
-                    this.nop();
-                }
-                ret.push(rgb);
-            }
+        deltaInRange(dr, dg, db) {
+            return this.deltaInRange2(dr) && this.deltaInRange2(dg) && this.deltaInRange2(db);
         }
-        return ret;
-    }
-    applyTo2(test, delta) {
-        let r = test.getR() + delta[0];
-        let g = test.getG() + delta[1];
-        let b = test.getB() + delta[2];
-        if (this.rgbInRange(r, g, b)) {
-            return new RGB(Math.abs(r % 256), Math.abs(g % 256), Math.abs(b % 256));
+        deltaInRange2(dr) {
+            return dr > -256 && dr < 256;
         }
-        return null;
-    }
-    nop() {
-        // No operation
-    }
-}
-Deltas.minDelta = -255;
-Deltas.maxDelta = 255;
-/**
- * This is how we order the neighbors of pixel X
- * --812---
- * --7X3---
- * --654---
- */
-class NeighborPixels extends Array {
-    constructor(cr, faster) {
-        super();
-        let i = 0;
-        for (let n = 1; n <= 8; n++) {
-            this[i++] = this.neighbor(cr, n, faster);
+        rgbInRange(dr, dg, db) {
+            return this.rgbInRange2(dr) && this.rgbInRange2(dg) && this.rgbInRange2(db);
         }
-    }
-    neighbor(cr, n, faster) {
-        let ret = null;
-        switch (n) {
-            case 1:
-                ret = new ColRow(cr.getCol(), cr.getRow() - 1);
-                break;
-            case 2:
-                ret = new ColRow(cr.getCol() + 1, cr.getRow() - 1);
-                break;
-            case 3:
-                ret = new ColRow(cr.getCol() + 1, cr.getRow());
-                break;
-            case 4:
-                ret = new ColRow(cr.getCol() + 1, cr.getRow() + 1);
-                break;
-            case 5:
-                ret = new ColRow(cr.getCol(), cr.getRow() + 1);
-                break;
-            case 6:
-                ret = new ColRow(cr.getCol() - 1, cr.getRow() + 1);
-                break;
-            case 7:
-                ret = new ColRow(cr.getCol() - 1, cr.getRow());
-                break;
-            case 8:
-                ret = new ColRow(cr.getCol() - 1, cr.getRow() - 1);
-                break;
+        rgbInRange2(dr) {
+            return dr > -1 && dr < 256;
         }
-        if (!ret.isValid(faster)) {
-            ret = null;
-        }
-        return ret;
-    }
-}
-class Rgb {
-    /*
-    *
-    */
-    static getPixelRed(pixel) {
-        return (pixel & Rgb.mRed) >> 16;
-    }
-    static getPixelBlue(pixel) {
-        return pixel & Rgb.mBlue;
-    }
-    static getPixelGreen(pixel) {
-        return (pixel & Rgb.mGreen) >> 8;
-    }
-    static pixel(r, g, b, a) {
-        let ret = (a << 24) + (r << 16) + (g << 8) + b;
-        return ret;
-    }
-    havingSum(sum) {
-        const ret = [];
-        for (let r = 0; r < 256; r++) {
-            for (let g = 0; g < 256; g++) {
-                for (let b = 0; b < 256; b++) {
-                    const localSum = r + g + b;
-                    if (localSum === sum) {
-                        ret.push(new RGB(r, g, b));
+        applyTo(test) {
+            let sumTest = test.sum();
+            let ret = [];
+            for (let delta of this.deltas) {
+                let rgb = this.applyTo2(test, delta);
+                if (rgb !== null) {
+                    let sumNew = rgb.sum();
+                    if (sumNew !== sumTest) {
+                        this.nop();
                     }
+                    ret.push(rgb);
                 }
             }
-        }
-        return ret;
-    }
-    static getPixelAlpha(pixel) {
-        return (pixel >> 24) & 0xFF;
-    }
-    static debugString(pixel) {
-        let ret = `ARGB( ${Rgb.getPixelAlpha(pixel)} ${Rgb.getPixelRed(pixel)} ${Rgb.getPixelGreen(pixel)} ${Rgb.getPixelBlue(pixel)}`;
-        return ret;
-    }
-    static sort(colors) {
-        let ret = Array.from(colors);
-        this.sortRgb(ret);
-        return ret;
-    }
-    static sortRgb(colors) {
-        colors.sort((rgb1, rgb2) => {
-            let pix1 = rgb1.getPixel();
-            let pix2 = rgb2.getPixel();
-            let ret = (pix1 < pix2) ? -1 : (pix1 > pix2) ? 1 : 0;
             return ret;
-        });
+        }
+        applyTo2(test, delta) {
+            let r = test.getR() + delta[0];
+            let g = test.getG() + delta[1];
+            let b = test.getB() + delta[2];
+            if (this.rgbInRange(r, g, b)) {
+                return new RGB(Math.abs(r % 256), Math.abs(g % 256), Math.abs(b % 256));
+            }
+            return null;
+        }
+        nop() {
+            // No operation
+        }
     }
-    static colorFamily(rgb) {
-        if (rgb.r > rgb.g && rgb.r > rgb.b) {
-            return ColorFamily.red;
-        }
-        else if (rgb.g > rgb.r && rgb.g > rgb.b) {
-            return ColorFamily.green;
-        }
-        else if (rgb.b > rgb.r && rgb.b > rgb.g) {
-            return ColorFamily.blue;
-        }
-        // Now we do the tie breakers
-        if (rgb.r == rgb.g) { // r and g are the max
-            if (Rgb.isOdd(rgb.b)) {
-                return ColorFamily.red;
-            }
-            else {
-                return ColorFamily.green;
-            }
-        }
-        if (rgb.g == rgb.b) {
-            if (Rgb.isOdd(rgb.r)) {
-                return ColorFamily.green;
-            }
-            else {
-                return ColorFamily.blue;
-            }
-        }
-        if (rgb.r == rgb.b) {
-            if (Rgb.isOdd(rgb.r)) {
-                return ColorFamily.red;
-            }
-            else {
-                return ColorFamily.blue;
-            }
-        }
-        return null;
-    }
-    static isOdd(b) {
-        let ret = (b % 2) != 0;
-        return ret;
-    }
-    static render(colors, fill) {
-        let nel = colors.length;
-        let minCol = Number.MAX_VALUE;
-        let maxCol = Number.MIN_VALUE;
-        for (let i = 0; i < nel; i++) {
-            let rgb = colors[i];
-            let col = 2 * rgb.r + rgb.b;
-            minCol = Math.min(col, minCol);
-            maxCol = Math.max(col, maxCol);
-        }
-        let wid = 1 + maxCol - minCol;
-        let ht = 256;
-        let ret = VisImage.fromDimensions(wid, ht);
-        if (fill != null) {
-            ret.getData().fill(fill.getPixel());
-        }
-        for (let i = 0; i < nel; i++) {
-            let rgb = colors[i];
-            let col = 2 * rgb.r + rgb.b - minCol;
-            let row = rgb.g;
-            ret.setRGB(col, row, rgb);
-        }
-        return ret;
-    }
-    static extract(palette, luminance) {
-        let ret = new Array();
-        let cr = null;
-        let wid = palette.getWidth();
-        let ht = palette.getHeight();
-        let faster = VisImage.fromDimensions(wid, ht);
-        for (let col = 0; col < wid && cr == null; col++) {
-            for (let row = 0; row < ht && cr == null; row++) {
-                let pixel = faster.getData()[row * faster.getWidth() + col];
-                let alpha = Rgb.getPixelAlpha(pixel);
-                if (alpha > 0) {
-                    cr = new ColRow(col, row);
-                }
-            }
-        }
-        while (cr != null) {
-            //sop( cr.dbgString() );
-            // consume it
-            let iRet = 0;
-            let iFaster = cr.getCol() + cr.getRow() * faster.getWidth();
-            ret[iRet++] = new RGB(faster.getData()[iFaster], faster.getData()[iFaster + 1], faster.getData()[iFaster + 2]);
-            faster.getData()[iFaster + 3] = 0; // mark it as consumed
-            cr = this.findNext(cr, faster, 0);
-        }
-        let livePixelCount = Rgb.getLivePixelCount(palette);
-        if (ret.length != livePixelCount) {
-            //revealOutline( faster, pixelOfConsumed );
-            //faster.toVisImage().popup( String.format( "Failed extract, luminance = %f, expected = ${}, actual = ${}", luminance, livePixelCount, ret.size() ) );
-            throw `Rgb.extract(): Expected ${livePixelCount} colors, got ${ret.length}`;
-        }
-        // We aim to now have a blank palette. But until this is working, the remnant is the bug to look at.
-        //faster.toVisImage(palette);
-        return ret;
-    }
+    Deltas.minDelta = -255;
+    Deltas.maxDelta = 255;
     /**
-     * @param cr
-     * @param recursionCount
-     * @param helper
-     * @return
-     *
-     * Algorithm: Search neighboring pixels in clockwise direction. Return the
-     * first live pixel found AFTER an empty pixel. This ensures that the
-     * pixel return is adjacent to the boundary.
+     * This is how we order the neighbors of pixel X
+     * --812---
+     * --7X3---
+     * --654---
      */
-    static findNext(cr, faster, recursionCount) {
-        let recursionMax = 3;
-        let ret = null;
-        let np = new NeighborPixels(cr, faster);
-        let index = 0;
-        let foundEmpty = false;
-        do {
-            let cr2 = np[index];
-            if (!this.isLivePixel(cr2, faster)) {
-                foundEmpty = true;
+    class NeighborPixels extends Array {
+        constructor(cr, faster) {
+            super();
+            let i = 0;
+            for (let n = 1; n <= 8; n++) {
+                this[i++] = this.neighbor(cr, n, faster);
             }
-            else {
-                if (foundEmpty) {
-                    ret = cr2;
-                }
+        }
+        neighbor(cr, n, faster) {
+            let ret = null;
+            switch (n) {
+                case 1:
+                    ret = new _11dotjs.ColRow(cr.getCol(), cr.getRow() - 1);
+                    break;
+                case 2:
+                    ret = new _11dotjs.ColRow(cr.getCol() + 1, cr.getRow() - 1);
+                    break;
+                case 3:
+                    ret = new _11dotjs.ColRow(cr.getCol() + 1, cr.getRow());
+                    break;
+                case 4:
+                    ret = new _11dotjs.ColRow(cr.getCol() + 1, cr.getRow() + 1);
+                    break;
+                case 5:
+                    ret = new _11dotjs.ColRow(cr.getCol(), cr.getRow() + 1);
+                    break;
+                case 6:
+                    ret = new _11dotjs.ColRow(cr.getCol() - 1, cr.getRow() + 1);
+                    break;
+                case 7:
+                    ret = new _11dotjs.ColRow(cr.getCol() - 1, cr.getRow());
+                    break;
+                case 8:
+                    ret = new _11dotjs.ColRow(cr.getCol() - 1, cr.getRow() - 1);
+                    break;
             }
-            index++;
-        } while (index < 8 && ret == null);
-        if (ret == null && recursionCount < recursionMax) {
-            // Try the neighbors of each neighbor
-            for (let cr3 of np) {
-                if (cr3 != null) {
-                    ret = this.findNext(cr3, faster, recursionCount + 1);
-                    if (ret != null) {
-                        break;
+            if (!ret.isValid(faster)) {
+                ret = null;
+            }
+            return ret;
+        }
+    }
+    class Rgb {
+        /*
+        *
+        */
+        static getPixelRed(pixel) {
+            return (pixel & Rgb.mRed) >> 16;
+        }
+        static getPixelBlue(pixel) {
+            return pixel & Rgb.mBlue;
+        }
+        static getPixelGreen(pixel) {
+            return (pixel & Rgb.mGreen) >> 8;
+        }
+        static pixel(r, g, b, a) {
+            let ret = (a << 24) + (r << 16) + (g << 8) + b;
+            return ret;
+        }
+        havingSum(sum) {
+            const ret = [];
+            for (let r = 0; r < 256; r++) {
+                for (let g = 0; g < 256; g++) {
+                    for (let b = 0; b < 256; b++) {
+                        const localSum = r + g + b;
+                        if (localSum === sum) {
+                            ret.push(new RGB(r, g, b));
+                        }
                     }
                 }
             }
+            return ret;
         }
-        return ret;
-    }
-    static isLivePixel(cr, faster) {
-        if (cr != null) {
-            let pixel = faster.getData()[cr.getCol() + cr.getRow() * faster.getWidth()];
-            let alpha = Rgb.getPixelAlpha(pixel);
-            return alpha > 0;
+        static getPixelAlpha(pixel) {
+            return (pixel >> 24) & 0xFF;
         }
-        return false;
-    }
-    static colorsWithBrightness(brightnessZeroToOne) {
-        let iMagnitude = Math.round(brightnessZeroToOne * 3 * 255);
-        let red = Math.max(0, Math.min(255, iMagnitude));
-        let green = Math.max(0, Math.min(255, iMagnitude - red));
-        let blue = Math.max(0, Math.min(255, iMagnitude - (red + green)));
-        let model = new RGB(red, green, blue);
-        let deltas = new Deltas();
-        let ret = deltas.applyTo(model);
-        return ret;
-    }
-    static getLivePixelCount(palette) {
-        let ret = 0, count = 0;
-        let wid = palette.getWidth();
-        let ht = palette.getHeight();
-        let faster = VisImage.fromDimensions(palette.getWidth(), palette.getHeight());
-        for (let col = 0; col < wid; col++) {
-            for (let row = 0; row < ht; row++) {
-                count++;
-                let alpha = faster.getData()[col + row * faster.getWidth() + 3];
-                if (alpha > 0) {
-                    ret++;
+        static debugString(pixel) {
+            let ret = `ARGB( ${Rgb.getPixelAlpha(pixel)} ${Rgb.getPixelRed(pixel)} ${Rgb.getPixelGreen(pixel)} ${Rgb.getPixelBlue(pixel)}`;
+            return ret;
+        }
+        static sort(colors) {
+            let ret = Array.from(colors);
+            this.sortRgb(ret);
+            return ret;
+        }
+        static sortRgb(colors) {
+            colors.sort((rgb1, rgb2) => {
+                let pix1 = rgb1.getPixel();
+                let pix2 = rgb2.getPixel();
+                let ret = (pix1 < pix2) ? -1 : (pix1 > pix2) ? 1 : 0;
+                return ret;
+            });
+        }
+        static colorFamily(rgb) {
+            if (rgb.r > rgb.g && rgb.r > rgb.b) {
+                return ColorFamily.red;
+            }
+            else if (rgb.g > rgb.r && rgb.g > rgb.b) {
+                return ColorFamily.green;
+            }
+            else if (rgb.b > rgb.r && rgb.b > rgb.g) {
+                return ColorFamily.blue;
+            }
+            // Now we do the tie breakers
+            if (rgb.r == rgb.g) { // r and g are the max
+                if (Rgb.isOdd(rgb.b)) {
+                    return ColorFamily.red;
+                }
+                else {
+                    return ColorFamily.green;
                 }
             }
+            if (rgb.g == rgb.b) {
+                if (Rgb.isOdd(rgb.r)) {
+                    return ColorFamily.green;
+                }
+                else {
+                    return ColorFamily.blue;
+                }
+            }
+            if (rgb.r == rgb.b) {
+                if (Rgb.isOdd(rgb.r)) {
+                    return ColorFamily.red;
+                }
+                else {
+                    return ColorFamily.blue;
+                }
+            }
+            return null;
         }
-        return ret;
+        static isOdd(b) {
+            let ret = (b % 2) != 0;
+            return ret;
+        }
+        static render(colors, fill) {
+            let nel = colors.length;
+            let minCol = Number.MAX_VALUE;
+            let maxCol = Number.MIN_VALUE;
+            for (let i = 0; i < nel; i++) {
+                let rgb = colors[i];
+                let col = 2 * rgb.r + rgb.b;
+                minCol = Math.min(col, minCol);
+                maxCol = Math.max(col, maxCol);
+            }
+            let wid = 1 + maxCol - minCol;
+            let ht = 256;
+            let ret = _11dotjs.VisImage.fromDimensions(wid, ht);
+            if (fill != null) {
+                ret.getData().fill(fill.getPixel());
+            }
+            for (let i = 0; i < nel; i++) {
+                let rgb = colors[i];
+                let col = 2 * rgb.r + rgb.b - minCol;
+                let row = rgb.g;
+                ret.setRGB(col, row, rgb);
+            }
+            return ret;
+        }
+        static extract(palette, luminance) {
+            let ret = new Array();
+            let cr = null;
+            let wid = palette.getWidth();
+            let ht = palette.getHeight();
+            let faster = _11dotjs.VisImage.fromDimensions(wid, ht);
+            for (let col = 0; col < wid && cr == null; col++) {
+                for (let row = 0; row < ht && cr == null; row++) {
+                    let pixel = faster.getData()[row * faster.getWidth() + col];
+                    let alpha = Rgb.getPixelAlpha(pixel);
+                    if (alpha > 0) {
+                        cr = new _11dotjs.ColRow(col, row);
+                    }
+                }
+            }
+            while (cr != null) {
+                //sop( cr.dbgString() );
+                // consume it
+                let iRet = 0;
+                let iFaster = cr.getCol() + cr.getRow() * faster.getWidth();
+                ret[iRet++] = new RGB(faster.getData()[iFaster], faster.getData()[iFaster + 1], faster.getData()[iFaster + 2]);
+                faster.getData()[iFaster + 3] = 0; // mark it as consumed
+                cr = this.findNext(cr, faster, 0);
+            }
+            let livePixelCount = Rgb.getLivePixelCount(palette);
+            if (ret.length != livePixelCount) {
+                //revealOutline( faster, pixelOfConsumed );
+                //faster.toVisImage().popup( String.format( "Failed extract, luminance = %f, expected = ${}, actual = ${}", luminance, livePixelCount, ret.size() ) );
+                throw `Rgb.extract(): Expected ${livePixelCount} colors, got ${ret.length}`;
+            }
+            // We aim to now have a blank palette. But until this is working, the remnant is the bug to look at.
+            //faster.toVisImage(palette);
+            return ret;
+        }
+        /**
+         * @param cr
+         * @param recursionCount
+         * @param helper
+         * @return
+         *
+         * Algorithm: Search neighboring pixels in clockwise direction. Return the
+         * first live pixel found AFTER an empty pixel. This ensures that the
+         * pixel return is adjacent to the boundary.
+         */
+        static findNext(cr, faster, recursionCount) {
+            let recursionMax = 3;
+            let ret = null;
+            let np = new NeighborPixels(cr, faster);
+            let index = 0;
+            let foundEmpty = false;
+            do {
+                let cr2 = np[index];
+                if (!this.isLivePixel(cr2, faster)) {
+                    foundEmpty = true;
+                }
+                else {
+                    if (foundEmpty) {
+                        ret = cr2;
+                    }
+                }
+                index++;
+            } while (index < 8 && ret == null);
+            if (ret == null && recursionCount < recursionMax) {
+                // Try the neighbors of each neighbor
+                for (let cr3 of np) {
+                    if (cr3 != null) {
+                        ret = this.findNext(cr3, faster, recursionCount + 1);
+                        if (ret != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+        static isLivePixel(cr, faster) {
+            if (cr != null) {
+                let pixel = faster.getData()[cr.getCol() + cr.getRow() * faster.getWidth()];
+                let alpha = Rgb.getPixelAlpha(pixel);
+                return alpha > 0;
+            }
+            return false;
+        }
+        static colorsWithBrightness(brightnessZeroToOne) {
+            let iMagnitude = Math.round(brightnessZeroToOne * 3 * 255);
+            let red = Math.max(0, Math.min(255, iMagnitude));
+            let green = Math.max(0, Math.min(255, iMagnitude - red));
+            let blue = Math.max(0, Math.min(255, iMagnitude - (red + green)));
+            let model = new RGB(red, green, blue);
+            let deltas = new Deltas();
+            let ret = deltas.applyTo(model);
+            return ret;
+        }
+        static getLivePixelCount(palette) {
+            let ret = 0, count = 0;
+            let wid = palette.getWidth();
+            let ht = palette.getHeight();
+            let faster = _11dotjs.VisImage.fromDimensions(palette.getWidth(), palette.getHeight());
+            for (let col = 0; col < wid; col++) {
+                for (let row = 0; row < ht; row++) {
+                    count++;
+                    let alpha = faster.getData()[col + row * faster.getWidth() + 3];
+                    if (alpha > 0) {
+                        ret++;
+                    }
+                }
+            }
+            return ret;
+        }
     }
-}
-/*
- * ARGB Masks
-*/
-Rgb.mAlpha = 255 << 24;
-Rgb.mRed = 255 << 16;
-Rgb.mGreen = 255 << 8;
-Rgb.mBlue = 255;
-Rgb.mColor = ~Rgb.mAlpha;
+    /*
+    * ARGB Masks
+    */
+    Rgb.mAlpha = 255 << 24;
+    Rgb.mRed = 255 << 16;
+    Rgb.mGreen = 255 << 8;
+    Rgb.mBlue = 255;
+    Rgb.mColor = ~Rgb.mAlpha;
+    _11dotjs.Rgb = Rgb;
+})(_11dotjs || (_11dotjs = {}));
 var _11dotjs;
 (function (_11dotjs) {
     class TableConfig {
@@ -753,19 +774,19 @@ var _11dotjs;
             }
             return ret;
         }
-        static demo() {
-            document.body.style.backgroundColor = "black";
+        static demo(parent, rowCount, colCount) {
+            parent.style.backgroundColor = "black";
             const componentId = "tables_demo";
             const ui = Tables.generate({
                 "componentId": componentId,
                 "hasHeader": false,
-                "rowCount": 10,
-                "columnCount": 12,
+                "rowCount": (rowCount) ? rowCount : 10,
+                "columnCount": (colCount) ? colCount : 12,
                 "cellContent": [[{ "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } }]],
                 //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
                 "cellStyle": [["padding: 24px; background-color: RGB(0,0,0);"]]
             });
-            _11dotjs.DocComposer.compose(ui, document.body);
+            _11dotjs.DocComposer.compose(ui, parent);
             // Retrieve a cell
             let el = Tables.getCellElement(componentId, 0, 0);
             //el.style.setProperty("background-color", "red" );
@@ -930,7 +951,7 @@ var _11dotjs;
 })(_11dotjs || (_11dotjs = {}));
 var _11dotjs;
 (function (_11dotjs) {
-    _11dotjs.defaultFont = "consolas";
+    _11dotjs.defaultFont = "Inter";
     let DialogPosition;
     (function (DialogPosition) {
         DialogPosition[DialogPosition["center"] = 1] = "center";
@@ -1189,7 +1210,7 @@ var _11dotjs;
                     }, this.componentId + "_objectStorage");
                 }
             }
-            this.setColor((color) ? color : new RGB(128, 0, 0), true);
+            this.setColor((color) ? color : new _11dotjs.RGB(128, 0, 0), true);
             // create our variable in the global namespace
             window[this.componentId] = this;
             if (false) {
@@ -1313,8 +1334,8 @@ var _11dotjs;
             }
             if (!vi) {
                 //console.log( 'Image cache miss ()`.');
-                let colors = Rgb.colorsWithBrightness(luminance);
-                vi = Rgb.render(colors, ColorPalette.rgbCanvasFill);
+                let colors = _11dotjs.Rgb.colorsWithBrightness(luminance);
+                vi = _11dotjs.Rgb.render(colors, ColorPalette.rgbCanvasFill);
                 this.imageCache.set(key, vi);
             }
             this.showIt(vi.getImageData(), luminance);
@@ -1327,8 +1348,8 @@ var _11dotjs;
             return ret;
         }
         colorsWithBrightness(brightnessZeroToOne) {
-            let colors = Rgb.colorsWithBrightness(brightnessZeroToOne);
-            let ret = Rgb.render(colors, ColorPalette.rgbCanvasFill);
+            let colors = _11dotjs.Rgb.colorsWithBrightness(brightnessZeroToOne);
+            let ret = _11dotjs.Rgb.render(colors, ColorPalette.rgbCanvasFill);
             return ret;
         }
         showIt(palette, luminance) {
@@ -1339,7 +1360,7 @@ var _11dotjs;
                 if (ctx) {
                     let sx = canvas.width / palette.width;
                     let sy = canvas.height / palette.height;
-                    let palette2 = VisImage.fromImageData(palette).cropImageToContent();
+                    let palette2 = _11dotjs.VisImage.fromImageData(palette).cropImageToContent();
                     let palette3 = palette2.scale(canvas.width, canvas.height);
                     ctx.font = `1em ${_11dotjs.defaultFont}`;
                     ctx.putImageData(palette3.getImageData(), 0, 0);
@@ -1385,7 +1406,7 @@ var _11dotjs;
                 const y = Math.floor(event.clientY - rect.top);
                 const raster = ctx.getImageData(0, 0, rect.width, rect.height);
                 console.log(`Mouse click at: ${x.toFixed(2)}, ${y.toFixed(2)}`);
-                this.selectColorAt(new ColRow(x, y), true);
+                this.selectColorAt(new _11dotjs.ColRow(x, y), true);
             }
         }
         selectColorAt(location, showBytes) {
@@ -1395,14 +1416,14 @@ var _11dotjs;
             const rect = canvas.getBoundingClientRect();
             const raster = ctx.getImageData(0, 0, rect.width, rect.height);
             const index = location.getAsIndex(rect.width);
-            const color = new RGB(raster.data[index], raster.data[index + 1], raster.data[index + 2]);
+            const color = new _11dotjs.RGB(raster.data[index], raster.data[index + 1], raster.data[index + 2]);
             const sample = this.getTheColorSampleCanvas();
             color.fillCanvas(sample);
             if (this.markerLocation) {
                 // remove old marker
-                VisImage.toggleMarker(this.markerLocation.getCol(), this.markerLocation.getRow(), ctx);
+                _11dotjs.VisImage.toggleMarker(this.markerLocation.getCol(), this.markerLocation.getRow(), ctx);
             }
-            VisImage.toggleMarker(location.getCol(), location.getRow(), ctx);
+            _11dotjs.VisImage.toggleMarker(location.getCol(), location.getRow(), ctx);
             this.markerLocation = location;
             sample.title = color.toString();
             //navigator.clipboard.writeText(color.toString());
@@ -1441,7 +1462,7 @@ var _11dotjs;
             const rect = canvas.getBoundingClientRect();
             const ctx = this.get2DCanvasRenderingContext();
             const raster = ctx.getImageData(0, 0, rect.width, rect.height);
-            const vi = VisImage.fromImageData(raster);
+            const vi = _11dotjs.VisImage.fromImageData(raster);
             let location = vi.findColor(color);
             if (!location) {
                 location = vi.findColorApproximate(color, 1);
@@ -1455,7 +1476,7 @@ var _11dotjs;
             }
         }
         onByteTextUpdate() {
-            const color = new RGB(this.harvestRgbByte(document.getElementById(this.componentId + "_redByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_greenByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_blueByte")));
+            const color = new _11dotjs.RGB(this.harvestRgbByte(document.getElementById(this.componentId + "_redByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_greenByte")), this.harvestRgbByte(document.getElementById(this.componentId + "_blueByte")));
             this.setColor(color, false);
         }
         harvestRgbByte(input) {
@@ -2467,33 +2488,36 @@ var _11dotjs;
                     "text": Demo.defaultGuiJson(),
                     "oninput": "_11dotjs.Demo.renderPreview( event )"
                 },
-                "br_2": null,
-                "label": {
-                    "input": {
-                        "id": Demo.idOfShowHtmlCheckBox(),
-                        "type": "checkbox",
-                        "onchange": "_11dotjs.Demo.onChangeShowHtml( event )"
+                "br": null,
+                "div": {
+                    "style": "margin-top: 0.5em",
+                    "label": {
+                        "input": {
+                            "id": Demo.idOfShowHtmlCheckBox(),
+                            "type": "checkbox",
+                            "onchange": "_11dotjs.Demo.onChangeShowHtml( event )"
+                        },
+                        "text": "Show the HTML"
                     },
-                    "text": "Show the HTML"
-                },
-                "span": {
-                    "style": "margin-left: 1.5em",
-                    "text": "JSON.parse",
-                    "id": Demo.idOfParseIndicator(),
-                },
-                "span_2": {
-                    "style": "margin-left: 1.5em",
-                    "text": "DocComposer",
-                    "id": Demo.idOfComposerIndicator(),
-                },
-                "a": {
-                    "text": "Download this JSON",
-                    "style": "margin-left: 1.5em",
-                    "href": "#",
-                    "onclick": `_11dotjs.ObjectStorage.downloadJson(
-                        _11dotjs.Demo.textArea().value, 
-                        '${Demo.downloadFileName}'
-                    );`
+                    "span": {
+                        "style": "margin-left: 1.5em",
+                        "text": "JSON.parse",
+                        "id": Demo.idOfParseIndicator(),
+                    },
+                    "span_2": {
+                        "style": "margin-left: 1.5em",
+                        "text": "DocComposer",
+                        "id": Demo.idOfComposerIndicator(),
+                    },
+                    "a": {
+                        "text": "Download this JSON",
+                        "style": "margin-left: 1.5em",
+                        "href": "#",
+                        "onclick": `_11dotjs.ObjectStorage.downloadJson(
+                            _11dotjs.Demo.textArea().value, 
+                            '${Demo.downloadFileName}'
+                        );`
+                    }
                 }
             }, tdCode);
             Demo.taCode = Demo.textArea();
@@ -2538,6 +2562,11 @@ var _11dotjs;
         static renderPreview(event) {
             // Preview the GUI in the right-hand panel
             let json = (event) ? event.target.value : Demo.taCode.value;
+            if (json == Demo.lastValidJson) {
+                // OPTIMIZATION
+                Demo.showParseError(false, null);
+                return;
+            }
             let o = null;
             try {
                 o = JSON.parse(json);
@@ -2555,10 +2584,14 @@ var _11dotjs;
                 Demo.showDocComposerError(true, msg);
                 return;
             }
-            let tdPv = _11dotjs.Tables.getCellElement(Demo.componentId, 1, 1);
+            let tdPv = Demo.previewElement();
             tdPv.innerHTML = null;
             tdPv.appendChild(n);
             Demo.showDocComposerError(false, null);
+            Demo.lastValidJson = json;
+        }
+        static previewElement() {
+            return _11dotjs.Tables.getCellElement(Demo.componentId, 1, 1);
         }
         static showDocComposerError(composeFailure, msg) {
             let span = Demo.composerIndicator();
@@ -2576,7 +2609,8 @@ var _11dotjs;
             if (parseFailure) {
                 span.style.color = Demo.rgbErrorIndicator;
                 span.innerHTML = `JSON.parse: ${msg}`;
-                Demo.highlightJsonError(Demo.textArea(), msg);
+                // This makes it impossible to type in there
+                //Demo.highlightJsonError( Demo.textArea(), msg );
             }
             else {
                 span.style.color = Demo.rgbOkIndicator;
@@ -2696,9 +2730,15 @@ var _11dotjs;
             },
             "span": { "text": " . " },
             "a_2": {
+                "text": "Tables",
+                "href": "#",
+                "onclick": "_11dotjs.Demo.tablesDemo();"
+            },
+            "span_2": { "text": " . " },
+            "a_3": {
                 "text": "Modal Dialog",
                 "href": "#",
-                "onclick": "_11dotjs.Demo.modalDialog();"
+                "onclick": "_11dotjs.Demo.modalDialogDemo();"
             },
             "br_2": null, "br_3": null,
             "text_2": "links: ",
@@ -2724,18 +2764,13 @@ var _11dotjs;
             return ret;
         }
         static colorPaletteDemo() {
-            new _11dotjs.ColorPalette(new RGB(0, 0, 160), (color) => {
-                //document.body.style.backgroundColor = color.css;
-                let table = _11dotjs.NodeUtil.firstParent(_11dotjs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
-                for (let td of Array.from(table.querySelectorAll("td"))) {
-                    if (td.id) {
-                        td.style.border = `0.7em solid ${color.css}`;
-                    }
-                }
-            }, 'colorPalette1');
+            Demo.colorPalette("colorPaletteDemo", false);
         }
-        static modalDialog() {
-            new _11dotjs.ColorPalette(new RGB(0, 0, 160), (color) => {
+        static modalDialogDemo() {
+            Demo.colorPalette("modalDialogDemo", true);
+        }
+        static colorPalette(id, modal) {
+            new _11dotjs.ColorPalette(Demo.currentBorderColor(), (color) => {
                 //document.body.style.backgroundColor = color.css;
                 let table = _11dotjs.NodeUtil.firstParent(_11dotjs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
                 for (let td of Array.from(table.querySelectorAll("td"))) {
@@ -2743,7 +2778,30 @@ var _11dotjs;
                         td.style.border = `0.7em solid ${color.css}`;
                     }
                 }
-            }, 'colorPalette1', true);
+            }, id, modal);
+        }
+        static currentBorderColor() {
+            let td = _11dotjs.NodeUtil.firstParent(Demo.textArea(), "TD");
+            let cssBorder = td.style.border;
+            let cssColor = cssBorder.substring(cssBorder.toUpperCase().indexOf("RGB"));
+            let ret = _11dotjs.RGB.fromCss(cssColor);
+            return ret;
+        }
+        static tablesDemo() {
+            //let tdPv = Demo.previewElement();
+            //tdPv.innerHTML = null;
+            let clientAreaId = Demo.componentId + "_tableDemoClient";
+            let dialog = new _11dotjs.Dialog({
+                "modal": false,
+                "parent": document.body,
+                "title": "11dotjs Tables",
+                "dialogId": this.componentId + "_tableDemoDialog",
+                "clientAreaId": clientAreaId,
+                "position": _11dotjs.DialogPosition.center
+            });
+            let client = document.getElementById(clientAreaId);
+            _11dotjs.Tables.demo(client, 7, 7);
+            dialog.setPosition();
         }
         // gpt
         static configureTextAreaForTabInsertion(textarea) {

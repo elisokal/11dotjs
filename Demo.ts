@@ -5,6 +5,7 @@ namespace _11dotjs {
         static downloadFileName = 'DocComposerDemo.json';
         static rgbOkIndicator = "RGB(11,121,11)";
         static rgbErrorIndicator = "RGB(176,11,11)";
+        static lastValidJson: string;
         //
         // This is a Demonstration of using 11dotjs to make a demonstration of 11dotjs!
         //
@@ -70,36 +71,38 @@ namespace _11dotjs {
                     "text": Demo.defaultGuiJson(),
                     "oninput": "_11dotjs.Demo.renderPreview( event )"
                 },
-                "br_2": null,
-                "label": {
-                    "input": {
-                        "id": Demo.idOfShowHtmlCheckBox(),
-                        "type": "checkbox",
-                        "onchange": "_11dotjs.Demo.onChangeShowHtml( event )"
+                "br": null,
+                "div": {
+                    "style": "margin-top: 0.5em",
+                    "label": {
+                        "input": {
+                            "id": Demo.idOfShowHtmlCheckBox(),
+                            "type": "checkbox",
+                            "onchange": "_11dotjs.Demo.onChangeShowHtml( event )"
+                        },
+                        "text": "Show the HTML"
                     },
-                    "text": "Show the HTML"
-                },
-                "span": {
-                    "style": "margin-left: 1.5em",
-                    "text": "JSON.parse",
-                    "id": Demo.idOfParseIndicator(),
-                },
-                "span_2": {
-                    "style": "margin-left: 1.5em",
-                    "text": "DocComposer",
-                    "id": Demo.idOfComposerIndicator(),
-                },
+                    "span": {
+                        "style": "margin-left: 1.5em",
+                        "text": "JSON.parse",
+                        "id": Demo.idOfParseIndicator(),
+                    },
+                    "span_2": {
+                        "style": "margin-left: 1.5em",
+                        "text": "DocComposer",
+                        "id": Demo.idOfComposerIndicator(),
+                    },
 
-                "a": {
-                    "text": "Download this JSON",
-                    "style": "margin-left: 1.5em",
-                    "href": "#",
-                    "onclick": `_11dotjs.ObjectStorage.downloadJson(
-                        _11dotjs.Demo.textArea().value, 
-                        '${Demo.downloadFileName}'
-                    );`
+                    "a": {
+                        "text": "Download this JSON",
+                        "style": "margin-left: 1.5em",
+                        "href": "#",
+                        "onclick": `_11dotjs.ObjectStorage.downloadJson(
+                            _11dotjs.Demo.textArea().value, 
+                            '${Demo.downloadFileName}'
+                        );`
+                    }
                 }
-
             }, tdCode );
             
             Demo.taCode = Demo.textArea();
@@ -152,6 +155,12 @@ namespace _11dotjs {
             // Preview the GUI in the right-hand panel
 
             let json: string = ( event ) ? event.target.value : Demo.taCode.value;
+            if( json == Demo.lastValidJson ) {
+                // OPTIMIZATION
+                Demo.showParseError( false, null );
+                return;
+            }
+
             let o = null;
             try {
                 o = JSON.parse( json );
@@ -168,11 +177,16 @@ namespace _11dotjs {
                 Demo.showDocComposerError( true, msg );
                 return;
             }
-            let tdPv: any = Tables.getCellElement( Demo.componentId, 1, 1 );
+            let tdPv: any = Demo.previewElement();
             tdPv.innerHTML = null;
             tdPv.appendChild( n );
             Demo.showDocComposerError( false, null );
+            Demo.lastValidJson = json;
         }
+        public static previewElement(): HTMLElement {
+            return Tables.getCellElement( Demo.componentId, 1, 1 );
+        }
+
         static showDocComposerError( composeFailure: boolean, msg: string ) {
             let span =  Demo.composerIndicator();
             if( composeFailure ) {
@@ -189,7 +203,8 @@ namespace _11dotjs {
             if( parseFailure ) {
                 span.style.color = Demo.rgbErrorIndicator;
                 span.innerHTML = `JSON.parse: ${msg}`;
-                Demo.highlightJsonError( Demo.textArea(), msg );
+                // This makes it impossible to type in there
+                //Demo.highlightJsonError( Demo.textArea(), msg );
             } else {
                 span.style.color = Demo.rgbOkIndicator;
                 span.innerHTML = `JSON.parse`;
@@ -315,9 +330,15 @@ namespace _11dotjs {
             },
             "span": { "text": " . " },
             "a_2": {
+                "text": "Tables",
+                "href": "#",
+                "onclick": "_11dotjs.Demo.tablesDemo();"
+            },
+            "span_2": { "text": " . " },
+            "a_3": {
                 "text": "Modal Dialog",
                 "href": "#",
-                "onclick": "_11dotjs.Demo.modalDialog();"
+                "onclick": "_11dotjs.Demo.modalDialogDemo();"
             },
             "br_2": null, "br_3": null,
             "text_2": "links: ",
@@ -345,19 +366,15 @@ namespace _11dotjs {
         }
 
         public static colorPaletteDemo() {
-            new _11dotjs.ColorPalette( new RGB(0,0,160), ( color ) => { 
-                //document.body.style.backgroundColor = color.css;
-                let table: HTMLTableElement = NodeUtil.firstParent( Tables.getCellElement( Demo.componentId, 0, 0 ), "TABLE" ) as HTMLTableElement;
-                for( let td of Array.from( table.querySelectorAll( "td" ) ) ) {
-                    if( td.id ) {
-                        td.style.border = `0.7em solid ${color.css}`
-                    }
-                }
-            }, 'colorPalette1' );
+            Demo.colorPalette( "colorPaletteDemo", false );
         }
        
-        public static modalDialog() {
-            new _11dotjs.ColorPalette( new RGB(0,0,160), ( color ) => { 
+        public static modalDialogDemo() {
+            Demo.colorPalette( "modalDialogDemo", true );
+        }
+
+        public static colorPalette( id:string, modal: boolean ) {
+            new _11dotjs.ColorPalette( Demo.currentBorderColor(), ( color ) => { 
                 //document.body.style.backgroundColor = color.css;
                 let table: HTMLTableElement = NodeUtil.firstParent( Tables.getCellElement( Demo.componentId, 0, 0 ), "TABLE" ) as HTMLTableElement;
                 for( let td of Array.from( table.querySelectorAll( "td" ) ) ) {
@@ -365,7 +382,32 @@ namespace _11dotjs {
                         td.style.border = `0.7em solid ${color.css}`
                     }
                 }
-            }, 'colorPalette1', true );
+            }, id, modal );
+        }
+
+        private static currentBorderColor(): RGB {
+            let td = NodeUtil.firstParent( Demo.textArea(), "TD" ) as HTMLElement
+            let cssBorder = td.style.border;
+            let cssColor = cssBorder.substring( cssBorder.toUpperCase().indexOf( "RGB" ) );
+            let ret = RGB.fromCss( cssColor );
+            return ret;
+        }
+
+        public static tablesDemo() {
+            //let tdPv = Demo.previewElement();
+            //tdPv.innerHTML = null;
+            let clientAreaId = Demo.componentId + "_tableDemoClient";
+            let dialog = new Dialog( { 
+                "modal": false,
+                "parent": document.body,
+                "title": "11dotjs Tables",
+                "dialogId": this.componentId + "_tableDemoDialog",
+                "clientAreaId": clientAreaId,
+                "position": DialogPosition.center
+            });
+            let client = document.getElementById( clientAreaId );
+            _11dotjs.Tables.demo( client, 7, 7 );
+            dialog.setPosition();
         }
 
         // gpt
@@ -387,5 +429,7 @@ namespace _11dotjs {
                 }
             });        
         }
+
+
     }
 }

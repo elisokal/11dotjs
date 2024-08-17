@@ -69,21 +69,21 @@ namespace _11dotjs {
             return ret;
         }
 
-        public static demo() {
+        public static demo( parent: HTMLElement, rowCount?: number, colCount?: number ) {
             
-            document.body.style.backgroundColor = "black";
+            parent.style.backgroundColor = "black";
             
             const componentId = "tables_demo";
             const ui = Tables.generate( {
                 "componentId": componentId,
                 "hasHeader": false,
-                "rowCount": 10, 
-                "columnCount": 12, 
+                "rowCount": ( rowCount ) ? rowCount: 10, 
+                "columnCount": ( colCount ) ? colCount : 12, 
                 "cellContent": [ [ { "img": { "src": "http://elisokal.com/imageLib/11dotjs/ball.png", "style": "width: 64px" } } ] ],
                 //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
                 "cellStyle": [ [ "padding: 24px; background-color: RGB(0,0,0);" ] ]
             } );
-            DocComposer.compose( ui, document.body );
+            DocComposer.compose( ui, parent );
 
             // Retrieve a cell
             let el = Tables.getCellElement( componentId, 0, 0 ) as HTMLElement;
