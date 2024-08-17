@@ -10,7 +10,7 @@ With the **11dotjs** web-authoring model, you can
 - Write your own generators.
 - Invoke the **11dotjs DocComposer** to convert your UI object graph directly to the browser’s DOM document.
 ## See a Demo
-There’s a demo at http://elisokal.com/11dotjs/demoDemo.html. 
+There’s a demo at http://www.11dotjs.org/
 ## Learn More
 Write to elisokal@gmail.com to discuss integration, customization, and collaboration.
 
