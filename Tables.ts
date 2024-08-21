@@ -15,7 +15,7 @@ namespace _11dotjs {
         public static generate( config: TableConfig ): Object {
             const componentId = ( config.componentId ) ? config.componentId : Tables.defaultComponentId;
             const tbody = {};
-            const ret:any = { "table": { "tbody": tbody } };
+            const ret:any = { "table": { "id": componentId, "tbody": tbody } };
             let thead = null;
             if( config.hasHeader ) {
                 thead = {};

@@ -1,4 +1,6 @@
-sources="NodeUtil.ts
+sources="Config.ts
+LocalStorage.ts
+NodeUtil.ts
 VisImage.ts
 Rgb.ts
 Tables.ts

@@ -10,9 +10,25 @@ namespace _11dotjs {
         // This is a Demonstration of using 11dotjs to make a demonstration of 11dotjs!
         //
         public static demo() {
-            // Get the code of this demo to show in the center pane.
+            Config.uponLoad();
+            LocalStorage.registerInstance();
             const body = document.body;
             body.style.fontFamily = "Inter";
+            // Create a dark mood
+            body.style.backgroundColor = "black";
+
+
+            if( !Demo.checkChannel () ) {
+                Demo.composerDemo();
+            }
+
+            Demo.renderMainIndicators( Demo.channel(), LocalStorage.getTabCount() );
+        }
+
+        public static composerDemo() {
+            
+            // Get the code of this demo to show in the center pane.
+            const body = document.body;
             DocComposer.compose( Demo.layoutTable(), body );
 
             // Reconfigure the top row
@@ -21,18 +37,6 @@ namespace _11dotjs {
             td00.nextSibling.remove();
             DocComposer.compose( 
                 {
-                    "head": {
-                        "link": [
-                            {
-                                "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
-                                "rel": "stylesheet"
-                            },
-                            {
-                                "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
-                                "rel": "stylesheet"
-                            }
-                        ] 
-                    },
                     "table": {
                         "style": "width: 100%",
                         "tr": {
@@ -117,9 +121,6 @@ namespace _11dotjs {
                 tEl.style.margin = "auto";
                 tEl.style.width = "96%";
             }
-
-            // Create a dark mood
-            body.style.backgroundColor = "black";
         }
         static idOfParseIndicator() {
             return Demo.componentId + "_parseIndicator";
@@ -306,46 +307,44 @@ namespace _11dotjs {
         private static defaultGuiJson(): string {
             let ret = `{
     "div": {
-        "div": {
-            "style": "width: 40em; font-family: Inter; ",
-            "p": {
-                "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
-            },
-            "iframe": {
-                "src": "https://www.youtube.com/embed/ZrcVIwgysBE",
-                "width": 374,
-                "height": 210,
-                "title": "YouTube video player",
-                "frameborder": 0,
-                "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                "referrerpolicy": "strict-origin-when-cross-origin",
-                "allowfullscreen": true
-            },
-            "br": null, "br_": null,
-            "text": "more demos: ",
-            "a": {
-                "text": "Intuitive Color Palette",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.colorPaletteDemo();"
-            },
-            "span": { "text": " . " },
-            "a_2": {
-                "text": "Tables",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.tablesDemo();"
-            },
-            "span_2": { "text": " . " },
-            "a_3": {
-                "text": "Modal Dialog",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.modalDialogDemo();"
-            },
-            "br_2": null, "br_3": null,
-            "text_2": "links: ",
-            "a_9": {
-                "text": "11dotjs on GitHub",
-                "href": "https://github.com/elisokal/11dotjs"
-            }
+        "style": "width: 40em; font-family: Inter; ",
+        "p": {
+            "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
+        },
+        "iframe": {
+            "src": "https://www.youtube.com/embed/ZrcVIwgysBE",
+            "width": 374,
+            "height": 210,
+            "title": "YouTube video player",
+            "frameborder": 0,
+            "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+            "referrerpolicy": "strict-origin-when-cross-origin",
+            "allowfullscreen": true
+        },
+        "br": null, "br_": null,
+        "text": "more demos: ",
+        "a": {
+            "text": "Intuitive Color Palette",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.colorPaletteDemo();"
+        },
+        "span": { "text": " . " },
+        "a_2": {
+            "text": "Tables",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.tablesDemo();"
+        },
+        "span_2": { "text": " . " },
+        "a_3": {
+            "text": "Modal Dialog",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.modalDialogDemo();"
+        },
+        "br_2": null, "br_3": null,
+        "text_2": "links: ",
+        "a_9": {
+            "text": "11dotjs on GitHub",
+            "href": "https://github.com/elisokal/11dotjs"
         }
     }
 }`
@@ -375,7 +374,6 @@ namespace _11dotjs {
 
         public static colorPalette( id:string, modal: boolean ) {
             new _11dotjs.ColorPalette( Demo.currentBorderColor(), ( color ) => { 
-                //document.body.style.backgroundColor = color.css;
                 let table: HTMLTableElement = NodeUtil.firstParent( Tables.getCellElement( Demo.componentId, 0, 0 ), "TABLE" ) as HTMLTableElement;
                 for( let td of Array.from( table.querySelectorAll( "td" ) ) ) {
                     if( td.id ) {
@@ -430,6 +428,60 @@ namespace _11dotjs {
             });        
         }
 
+        private static channel(): string {
+            let ret = new URL(location.href).searchParams.get( 'channel' );
+            return ret;
+            //return ( ret ) ? ret : 'zero';
+        }
+        private static checkChannel(): boolean {
+            let ch = Demo.channel();
+            if( ch ) {
+                Demo.openChannel( ch );
+                return true;
+            }
+            return false;
+        }
+        private static openChannel( ch: string ) {
+            if( ch == 'sleep' ) {
+                DocComposer.compose( 
+                    {
+                        "audio": {
+                            "controls": true,
+                            "src": 'http://www.elisokal.com/audio/GOE/2024-08-15.mp3',
+                            "loop": 1,
+                            "style": "width:100%",
+                        }            
+                    },
+                    document.body
+                );
+            }
+        }
 
+        private static renderMainIndicators( channel: string, instanceCount: number ) {
+            let layoutTableId = "renderMainIndicators";
+            let layoutTable: any = Tables.generate( { 
+                "rowCount": 2, 
+                "columnCount": 2 , 
+                "componentId": layoutTableId,
+                "cellStyle": [ [ "padding: 0.25em; border: 1px solid RGB(44,44,44); border-radius: 0.5em" ] ]
+            } );
+            DocComposer.compose( 
+                {
+                    "div": {
+                        "style": "position: fixed; left: 0.5em; bottom: 0.5em; color: RGB(111,11,11); font-size: large",
+                        "table": layoutTable.table
+                    }            
+                },
+                document.body
+            );
+            let elTable = document.getElementById( layoutTableId );
+            //elTable.style.borderCollapse = "collapse";
+            Tables.getCellElement( layoutTableId, 0, 0 ).innerHTML = "Channel";
+            Tables.getCellElement( layoutTableId, 0, 1 ).innerHTML = channel;
+            Tables.getCellElement( layoutTableId, 1, 0 ).innerHTML = "Tabs Open";
+            Tables.getCellElement( layoutTableId, 1, 1 ).innerHTML = `${instanceCount}`;
+        }
     }
 }
+
+

@@ -1,5 +1,121 @@
 var _11dotjs;
 (function (_11dotjs) {
+    class Config {
+        static uponLoad() {
+            let links = {
+                "link": [
+                    {
+                        "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
+                        "rel": "stylesheet"
+                    },
+                    {
+                        "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
+                        "rel": "stylesheet"
+                    }
+                ]
+            };
+            _11dotjs.DocComposer.compose(links, document.head);
+        }
+    }
+    _11dotjs.Config = Config;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
+    class LocalStorage {
+        static read(key) {
+            let json = window.localStorage.getItem(key);
+            let ret = JSON.parse(json);
+            return ret;
+        }
+        static readGlobal() {
+            return this.read(LocalStorage.lsGlobal);
+        }
+        static write(key, o) {
+            let json = JSON.stringify(o);
+            window.localStorage.setItem(key, json);
+        }
+        static writeGlobal(o) {
+            this.write(LocalStorage.lsGlobal, o);
+        }
+        static registerInstance() {
+            let reset = 0;
+            if (reset == 1) { // break here and set reset to 1 clear the SharedInstanceInfo
+                LocalStorage.writeGlobal(null);
+            }
+            let sii = LocalStorage.readGlobal();
+            if (!sii) {
+                sii = new SharedInstanceInfo();
+            }
+            let tabId = LocalStorage.browserTabId();
+            if (!sii.tabIdSet) {
+                sii["tabIdSet"] = {};
+            }
+            if (!sii.tabIdSet[tabId]) {
+                console.log(`Adding tab ${tabId}`);
+                sii.tabIdSet[tabId] = {};
+                LocalStorage.writeGlobal(sii);
+            }
+            else {
+                console.log(`tab ${tabId} already registered`);
+            }
+            LocalStorage.logTabIdSet();
+            window.addEventListener('beforeunload', (ev) => {
+                let sii = LocalStorage.readGlobal();
+                if (sii.tabIdSet[tabId]) {
+                    console.log(`Deleting tab ${tabId}`);
+                    delete sii.tabIdSet[tabId];
+                    LocalStorage.writeGlobal(sii);
+                }
+                else {
+                    console.log(`tab ${tabId} not found`);
+                }
+                LocalStorage.logTabIdSet();
+                //ev.preventDefault();
+                //return "beforeunload";
+                return null;
+            });
+        }
+        static logTabIdSet() {
+            let sii = LocalStorage.readGlobal();
+            if (sii) {
+                let ts = '';
+                let delim = '';
+                for (let id in sii.tabIdSet) {
+                    ts += delim + id;
+                    delim = ', ';
+                }
+                console.log(ts);
+            }
+            else {
+                console.log('No Shared Instance Info exists.');
+            }
+        }
+        static getTabCount() {
+            let sii = LocalStorage.readGlobal();
+            let o = Object.keys(sii.tabIdSet);
+            let ret = o.length;
+            return ret;
+        }
+        static browserTabId() {
+            if (!sessionStorage.getItem('tabId')) {
+                const uniqueId = Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+                sessionStorage.setItem('tabId', uniqueId);
+            }
+            let ret = sessionStorage.getItem('tabId');
+            return ret;
+        }
+    }
+    LocalStorage.lsGlobal = "lsGlobal";
+    _11dotjs.LocalStorage = LocalStorage;
+    //
+    // Object to be shared by all 11dotjs browser tabs
+    //
+    class SharedInstanceInfo {
+    }
+    _11dotjs.SharedInstanceInfo = SharedInstanceInfo;
+})(_11dotjs || (_11dotjs = {}));
+var _11dotjs;
+(function (_11dotjs) {
     class NodeUtil {
         static firstParent(node, tagName) {
             do {
@@ -724,7 +840,7 @@ var _11dotjs;
         static generate(config) {
             const componentId = (config.componentId) ? config.componentId : Tables.defaultComponentId;
             const tbody = {};
-            const ret = { "table": { "tbody": tbody } };
+            const ret = { "table": { "id": componentId, "tbody": tbody } };
             let thead = null;
             if (config.hasHeader) {
                 thead = {};
@@ -2432,27 +2548,26 @@ var _11dotjs;
         // This is a Demonstration of using 11dotjs to make a demonstration of 11dotjs!
         //
         static demo() {
-            // Get the code of this demo to show in the center pane.
+            _11dotjs.Config.uponLoad();
+            _11dotjs.LocalStorage.registerInstance();
             const body = document.body;
             body.style.fontFamily = "Inter";
+            // Create a dark mood
+            body.style.backgroundColor = "black";
+            if (!Demo.checkChannel()) {
+                Demo.composerDemo();
+            }
+            Demo.renderMainIndicators(Demo.channel(), _11dotjs.LocalStorage.getTabCount());
+        }
+        static composerDemo() {
+            // Get the code of this demo to show in the center pane.
+            const body = document.body;
             _11dotjs.DocComposer.compose(Demo.layoutTable(), body);
             // Reconfigure the top row
             let td00 = _11dotjs.Tables.getCellElement(Demo.componentId, 0, 0);
             td00.colSpan = 2;
             td00.nextSibling.remove();
             _11dotjs.DocComposer.compose({
-                "head": {
-                    "link": [
-                        {
-                            "href": "https://fonts.googleapis.com/css2?family=Inter&display=swap",
-                            "rel": "stylesheet"
-                        },
-                        {
-                            "href": "https://fonts.googleapis.com/css2?family=Roboto Mono&display=swap",
-                            "rel": "stylesheet"
-                        }
-                    ]
-                },
                 "table": {
                     "style": "width: 100%",
                     "tr": {
@@ -2530,8 +2645,6 @@ var _11dotjs;
                 tEl.style.margin = "auto";
                 tEl.style.width = "96%";
             }
-            // Create a dark mood
-            body.style.backgroundColor = "black";
         }
         static idOfParseIndicator() {
             return Demo.componentId + "_parseIndicator";
@@ -2706,46 +2819,44 @@ var _11dotjs;
         static defaultGuiJson() {
             let ret = `{
     "div": {
-        "div": {
-            "style": "width: 40em; font-family: Inter; ",
-            "p": {
-                "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
-            },
-            "iframe": {
-                "src": "https://www.youtube.com/embed/ZrcVIwgysBE",
-                "width": 374,
-                "height": 210,
-                "title": "YouTube video player",
-                "frameborder": 0,
-                "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-                "referrerpolicy": "strict-origin-when-cross-origin",
-                "allowfullscreen": true
-            },
-            "br": null, "br_": null,
-            "text": "more demos: ",
-            "a": {
-                "text": "Intuitive Color Palette",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.colorPaletteDemo();"
-            },
-            "span": { "text": " . " },
-            "a_2": {
-                "text": "Tables",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.tablesDemo();"
-            },
-            "span_2": { "text": " . " },
-            "a_3": {
-                "text": "Modal Dialog",
-                "href": "#",
-                "onclick": "_11dotjs.Demo.modalDialogDemo();"
-            },
-            "br_2": null, "br_3": null,
-            "text_2": "links: ",
-            "a_9": {
-                "text": "11dotjs on GitHub",
-                "href": "https://github.com/elisokal/11dotjs"
-            }
+        "style": "width: 40em; font-family: Inter; ",
+        "p": {
+            "text": "Welcome. You are looking at a demonstration of the 11dotjs DocComposer class. It provides a web-authoring model based on JavaScript objects in place of HTML. When you edit the code in the left-hand panel, this preview will update."
+        },
+        "iframe": {
+            "src": "https://www.youtube.com/embed/ZrcVIwgysBE",
+            "width": 374,
+            "height": 210,
+            "title": "YouTube video player",
+            "frameborder": 0,
+            "allow": "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+            "referrerpolicy": "strict-origin-when-cross-origin",
+            "allowfullscreen": true
+        },
+        "br": null, "br_": null,
+        "text": "more demos: ",
+        "a": {
+            "text": "Intuitive Color Palette",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.colorPaletteDemo();"
+        },
+        "span": { "text": " . " },
+        "a_2": {
+            "text": "Tables",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.tablesDemo();"
+        },
+        "span_2": { "text": " . " },
+        "a_3": {
+            "text": "Modal Dialog",
+            "href": "#",
+            "onclick": "_11dotjs.Demo.modalDialogDemo();"
+        },
+        "br_2": null, "br_3": null,
+        "text_2": "links: ",
+        "a_9": {
+            "text": "11dotjs on GitHub",
+            "href": "https://github.com/elisokal/11dotjs"
         }
     }
 }`;
@@ -2771,7 +2882,6 @@ var _11dotjs;
         }
         static colorPalette(id, modal) {
             new _11dotjs.ColorPalette(Demo.currentBorderColor(), (color) => {
-                //document.body.style.backgroundColor = color.css;
                 let table = _11dotjs.NodeUtil.firstParent(_11dotjs.Tables.getCellElement(Demo.componentId, 0, 0), "TABLE");
                 for (let td of Array.from(table.querySelectorAll("td"))) {
                     if (td.id) {
@@ -2818,6 +2928,52 @@ var _11dotjs;
                     textarea.selectionStart = textarea.selectionEnd = start + 1;
                 }
             });
+        }
+        static channel() {
+            let ret = new URL(location.href).searchParams.get('channel');
+            return ret;
+            //return ( ret ) ? ret : 'zero';
+        }
+        static checkChannel() {
+            let ch = Demo.channel();
+            if (ch) {
+                Demo.openChannel(ch);
+                return true;
+            }
+            return false;
+        }
+        static openChannel(ch) {
+            if (ch == 'sleep') {
+                _11dotjs.DocComposer.compose({
+                    "audio": {
+                        "controls": true,
+                        "src": 'http://www.elisokal.com/audio/GOE/2024-08-15.mp3',
+                        "loop": 1,
+                        "style": "width:100%",
+                    }
+                }, document.body);
+            }
+        }
+        static renderMainIndicators(channel, instanceCount) {
+            let layoutTableId = "renderMainIndicators";
+            let layoutTable = _11dotjs.Tables.generate({
+                "rowCount": 2,
+                "columnCount": 2,
+                "componentId": layoutTableId,
+                "cellStyle": [["padding: 0.25em; border: 1px solid RGB(44,44,44); border-radius: 0.5em"]]
+            });
+            _11dotjs.DocComposer.compose({
+                "div": {
+                    "style": "position: fixed; left: 0.5em; bottom: 0.5em; color: RGB(111,11,11); font-size: large",
+                    "table": layoutTable.table
+                }
+            }, document.body);
+            let elTable = document.getElementById(layoutTableId);
+            //elTable.style.borderCollapse = "collapse";
+            _11dotjs.Tables.getCellElement(layoutTableId, 0, 0).innerHTML = "Channel";
+            _11dotjs.Tables.getCellElement(layoutTableId, 0, 1).innerHTML = channel;
+            _11dotjs.Tables.getCellElement(layoutTableId, 1, 0).innerHTML = "Tabs Open";
+            _11dotjs.Tables.getCellElement(layoutTableId, 1, 1).innerHTML = `${instanceCount}`;
         }
     }
     Demo.componentId = "11dotjsDemo";

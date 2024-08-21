@@ -17,3 +17,13 @@ Although I will rarely update them, the other files that need to be deployed in 
 11dotjs.ico and 11dotjs.html
 
 Aw heck. I'll create a deploy.sh for this, duh.
+
+new URL(location.href).searchParams.get('channel')
+
+1003. Nevermind 1002. SEE deploy.sh
+
+1004. Thinking of doing a PixelFill page. But need to anticipate more use cases in
+one GUI design. Need MDI! But nobody likes MDI. Can I do a new take on MDI? NO.
+User browser tabs for tabs. Duh. But separate tabs are separate documents. Can
+11dotjs work with multiple documents? Can it copy a canvas from one tab to
+another????
