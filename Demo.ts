@@ -340,6 +340,12 @@ namespace _11dotjs {
             "href": "#",
             "onclick": "_11dotjs.Demo.modalDialogDemo();"
         },
+        "span_3": { "text": " . " },
+        "a_4": {
+            "text": "WebGL",
+            "href": "#",
+            "onclick": "_11dotjs.WebGL.demo();"
+        },
         "br_2": null, "br_3": null,
         "text_2": "links: ",
         "a_9": {
@@ -448,6 +454,18 @@ namespace _11dotjs {
                         "audio": {
                             "controls": true,
                             "src": 'http://www.elisokal.com/audio/GOE/2024-08-15.mp3',
+                            "loop": 1,
+                            "style": "width:100%",
+                        }            
+                    },
+                    document.body
+                );
+            } else if ( ch == 'music' ) {
+                DocComposer.compose( 
+                    {
+                        "audio": {
+                            "controls": true,
+                            "src": 'http://www.elisokal.com/audio/Desert%20Dwellers/DJmixes/Live%20at%203hr%20Rocky%20Mountain%20Set%202020.mp3',
                             "loop": 1,
                             "style": "width:100%",
                         }            

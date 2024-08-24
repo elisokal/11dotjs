@@ -25,16 +25,17 @@ namespace _11dotjs {
             if( !sii ) {
                 sii = new SharedInstanceInfo();
             }
-            let tabId = LocalStorage.browserTabId();
+            
             if( !sii.tabIdSet ) {
                 sii[ "tabIdSet"] = {};
             }
+            let tabId = LocalStorage.browserTabId( sii.tabIdSet );
             if( !sii.tabIdSet[ tabId ] ) {
-                console.log( `Adding tab ${tabId}` );
+                //console.log( `Adding tab ${tabId}` );
                 sii.tabIdSet[ tabId ] = {};
                 LocalStorage.writeGlobal( sii );
             } else {
-                console.log( `tab ${tabId} already registered` );
+                throw `Error! tab ${tabId} already registered`;
             }
             LocalStorage.logTabIdSet();
             window.addEventListener( 'beforeunload', ( ev ) => {
@@ -47,11 +48,10 @@ namespace _11dotjs {
                     console.log( `tab ${tabId} not found` );
                 }
                 LocalStorage.logTabIdSet();
-                //ev.preventDefault();
-                //return "beforeunload";
                 return null;
             } );
         }
+        
         static logTabIdSet() {
             let sii = LocalStorage.readGlobal() as SharedInstanceInfo;
             if( sii ) {
@@ -73,13 +73,29 @@ namespace _11dotjs {
             return ret;
         }
 
-        private static browserTabId() {
-            if ( !sessionStorage.getItem( 'tabId' ) ) {
-                const uniqueId = Date.now() + '-' + Math.random().toString(36).substring(2, 9);
-                sessionStorage.setItem( 'tabId', uniqueId );
+        static newUniqueId() {
+            return Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        }        
+
+        private static browserTabId( tabIdSet: Object ) {
+            let tabId = sessionStorage.getItem( 'tabId' );
+            if( tabId ) {
+                // Reload, or duplicated tab? For reload this tabId will
+                // not exist in local storage. For duplicated tab it will.
+    
+                if( !tabIdSet[ tabId ] ) {
+                    // Reload will have unloaded this tab, so we reinstate the id found in sessionStorage
+                    console.log(`Adding tab ${tabId}`);
+                } else {
+                    // duplicate tab actually duplicates sessionStorage! So we create a new ID.
+                    console.log( `tab ${tabId} is a duplicated tab` );
+                    tabId = LocalStorage.newUniqueId();
+                    console.log( `new id ${tabId} applied to duplicated tab` );
+                }
+            } else {
+                tabId = LocalStorage.newUniqueId();
             }
-            let ret = sessionStorage.getItem( 'tabId' );
-            return ret;
+            return tabId;
         }
 
         

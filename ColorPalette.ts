@@ -59,13 +59,6 @@ namespace _11dotjs {
 
 			// create our variable in the global namespace
 			window[ this.componentId ] = this;
-
-
-			if( false ) {
-				// WebGL test!
-				initWebGl();
-				webGlHello();
-			}
 		}		
 
 		private createUi( parent: Node ) {
