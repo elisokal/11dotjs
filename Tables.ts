@@ -69,12 +69,8 @@ namespace _11dotjs {
             return ret;
         }
 
-        public static demo( parent: HTMLElement, rowCount?: number, colCount?: number ) {
-            
-            parent.style.backgroundColor = "black";
-            
-            const componentId = "tables_demo";
-            const ui = Tables.generate( {
+        public static demoUi( rowCount: number, colCount: number, componentId: string ) {
+            return Tables.generate( {
                 "componentId": componentId,
                 "hasHeader": false,
                 "rowCount": ( rowCount ) ? rowCount: 10, 
@@ -83,6 +79,14 @@ namespace _11dotjs {
                 //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
                 "cellStyle": [ [ "padding: 24px; background-color: RGB(0,0,0);" ] ]
             } );
+        }
+
+        public static demo( parent: HTMLElement, rowCount?: number, colCount?: number ) {
+            
+            parent.style.backgroundColor = "black";
+            
+            const componentId = "tables_demo";
+            const ui = Tables.demoUi( rowCount, colCount, componentId );
             DocComposer.compose( ui, parent );
 
             // Retrieve a cell

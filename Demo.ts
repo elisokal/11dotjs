@@ -453,9 +453,9 @@ namespace _11dotjs {
                     {
                         "audio": {
                             "controls": true,
-                            "src": 'http://www.elisokal.com/audio/GOE/2024-08-15.mp3',
+                            "src": 'http://www.elisokal.com/audio/GOE/2024-08-24.mp3',
                             "loop": 1,
-                            "style": "width:100%",
+                            "style": "width:50%; transform: scale(2.0); transform-origin: 0 0",
                         }            
                     },
                     document.body
@@ -467,11 +467,13 @@ namespace _11dotjs {
                             "controls": true,
                             "src": 'http://www.elisokal.com/audio/Desert%20Dwellers/DJmixes/Live%20at%203hr%20Rocky%20Mountain%20Set%202020.mp3',
                             "loop": 1,
-                            "style": "width:100%",
+                            "style": "width:50%; transform: scale(2.0); transform-origin: 0 0",
                         }            
                     },
                     document.body
                 );
+            } else if ( ch == 'test' ) {
+                DocComposer.testToJsml();
             }
         }
 

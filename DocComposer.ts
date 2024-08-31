@@ -128,5 +128,92 @@ namespace _11dotjs {
 
         }
 
+        public static htmlToJsml( html: string ) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString( html, 'text/html');
+            const ret = DocComposer.docToJsml( doc );
+            return ret;
+        }
+
+        static dbgRet = null;
+        static dbgSource = null;
+
+        public static docToJsml( node: Node, ui?: Object, history?: Map< Node, Object >, 
+            arrayTagName?: string, arrayParent?: Object ): Object {
+            let ret = null;
+            if( node ) {
+                if( !ui ) {
+                    ui = {};
+                    ret = ui;
+                    DocComposer.dbgRet = ret;
+                }
+                if( !history ) {
+                    history = new Map();
+                }
+
+                if( history.has( node ) ) {
+                    return null;
+                } else {
+                    history.set( node, null );
+                }
+
+                let tagName = ( node as HTMLElement ).tagName.toLowerCase();
+                //console.log( tagName );
+                let uiNext = {};
+                
+                // Copy attributes
+                let el = node as HTMLElement;
+                for( const attrName of el.getAttributeNames() ) {
+                    let val = el.getAttribute( attrName );
+                    uiNext[ attrName ] = val;
+                }
+
+                // Add Object or array? It depends on the nextSibling node
+                if( node.nextSibling ) {
+                    let nextTagName = ( node.nextSibling as HTMLElement ).tagName.toLowerCase();
+                    if( false && nextTagName == tagName && !Array.isArray( ui ) ) {
+                        // Now the tip is an array!
+                        uiNext = [];
+                        arrayTagName = tagName;
+                        arrayParent = ui;
+                    }
+                }
+
+                if( !Array.isArray( ui ) ) {
+                    let counter = 2;
+                    let tn2 = tagName;
+                    while( ui [ tn2 ] ) {
+                        tn2 = `${tagName}_${counter++}`;
+                    }
+                    tagName = tn2;
+                    ui [ tagName ] = uiNext;
+                } else {
+                    let tmp = {};
+                    tmp[ tagName ] = uiNext;
+                    ui.push( tmp );
+                }
+
+                var children = node.childNodes;
+                if( children ) {
+                    for ( let i = 0; i < children.length; i++ ) {
+                        DocComposer.docToJsml( children[ i ], uiNext, history, arrayTagName, arrayParent );
+                    }
+                }
+                
+                // Now the siblings.
+                DocComposer.docToJsml( node.nextSibling, ui, history, arrayTagName, arrayParent );
+            }
+            return ret;
+        }
+
+        public static testToJsml() {
+            let ui = Tables.demoUi( 2, 3, "testToJsml" );
+            DocComposer.dbgSource = ui;
+            let doc = DocComposer.compose( ui, null );
+            let ui2 = DocComposer.docToJsml( doc )
+            console.log( JSON.stringify( ui2, null, 4 ) );
+            DocComposer.compose( ui2, document.body );
+            let stop = 1;
+        }
     }
 }

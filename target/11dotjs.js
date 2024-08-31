@@ -904,10 +904,8 @@ var _11dotjs;
             }
             return ret;
         }
-        static demo(parent, rowCount, colCount) {
-            parent.style.backgroundColor = "black";
-            const componentId = "tables_demo";
-            const ui = Tables.generate({
+        static demoUi(rowCount, colCount, componentId) {
+            return Tables.generate({
                 "componentId": componentId,
                 "hasHeader": false,
                 "rowCount": (rowCount) ? rowCount : 10,
@@ -916,6 +914,11 @@ var _11dotjs;
                 //"cellStyle": [ [ "padding: 24px; background-color: RGB(242,251,50);" ] ]
                 "cellStyle": [["padding: 24px; background-color: RGB(0,0,0);"]]
             });
+        }
+        static demo(parent, rowCount, colCount) {
+            parent.style.backgroundColor = "black";
+            const componentId = "tables_demo";
+            const ui = Tables.demoUi(rowCount, colCount, componentId);
             _11dotjs.DocComposer.compose(ui, parent);
             // Retrieve a cell
             let el = Tables.getCellElement(componentId, 0, 0);
@@ -1076,7 +1079,85 @@ var _11dotjs;
             } while (node);
             return ret;
         }
+        static htmlToJsml(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const ret = DocComposer.docToJsml(doc);
+            return ret;
+        }
+        static docToJsml(node, ui, history, arrayTagName, arrayParent) {
+            let ret = null;
+            if (node) {
+                if (!ui) {
+                    ui = {};
+                    ret = ui;
+                    DocComposer.dbgRet = ret;
+                }
+                if (!history) {
+                    history = new Map();
+                }
+                if (history.has(node)) {
+                    return null;
+                }
+                else {
+                    history.set(node, null);
+                }
+                let tagName = node.tagName.toLowerCase();
+                //console.log( tagName );
+                let uiNext = {};
+                // Copy attributes
+                let el = node;
+                for (const attrName of el.getAttributeNames()) {
+                    let val = el.getAttribute(attrName);
+                    uiNext[attrName] = val;
+                }
+                // Add Object or array? It depends on the nextSibling node
+                if (node.nextSibling) {
+                    let nextTagName = node.nextSibling.tagName.toLowerCase();
+                    if (false && nextTagName == tagName && !Array.isArray(ui)) {
+                        // Now the tip is an array!
+                        uiNext = [];
+                        arrayTagName = tagName;
+                        arrayParent = ui;
+                    }
+                }
+                if (!Array.isArray(ui)) {
+                    let counter = 2;
+                    let tn2 = tagName;
+                    while (ui[tn2]) {
+                        tn2 = `${tagName}_${counter++}`;
+                    }
+                    tagName = tn2;
+                    ui[tagName] = uiNext;
+                }
+                else {
+                    let tmp = {};
+                    tmp[tagName] = uiNext;
+                    ui.push(tmp);
+                }
+                var children = node.childNodes;
+                if (children) {
+                    for (let i = 0; i < children.length; i++) {
+                        DocComposer.docToJsml(children[i], uiNext, history, arrayTagName, arrayParent);
+                    }
+                }
+                // Now the siblings.
+                DocComposer.docToJsml(node.nextSibling, ui, history, arrayTagName, arrayParent);
+            }
+            return ret;
+        }
+        static testToJsml() {
+            let ui = _11dotjs.Tables.demoUi(2, 3, "testToJsml");
+            DocComposer.dbgSource = ui;
+            let doc = DocComposer.compose(ui, null);
+            let ui2 = DocComposer.docToJsml(doc);
+            console.log(JSON.stringify(ui2, null, 4));
+            DocComposer.compose(ui2, document.body);
+            let stop = 1;
+        }
     }
+    DocComposer.dbgRet = null;
+    DocComposer.dbgSource = null;
     _11dotjs.DocComposer = DocComposer;
 })(_11dotjs || (_11dotjs = {}));
 var _11dotjs;
@@ -2407,8 +2488,8 @@ var _11dotjs;
             return positionBuffer;
         }
         sphereVertexList(origin, radius) {
-            const slices = 16; //this.getSlices();
-            const rings = 16; //this.getRings();
+            const slices = 8; //this.getSlices();
+            const rings = 8; //this.getRings();
             const PI = Math.PI;
             let rho;
             let drho;
@@ -2525,11 +2606,14 @@ var _11dotjs;
             // Tell WebGL to use our program when drawing
             gl.useProgram(programInfo.program);
             this.configureViewVolume(programInfo.program);
+            this.configureLighting(programInfo.program);
             // Set the shader uniforms
             {
                 const offset = 0;
                 const vertexCount = this.positions.length / 3;
+                // Break here to see output?!
                 gl.drawArrays(gl.TRIANGLES, offset, vertexCount);
+                let stop = 1;
             }
         }
         configureViewVolume(program) {
@@ -2543,7 +2627,7 @@ var _11dotjs;
             mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
             // Set up the model view matrix (camera position)
             const modelViewMatrix = mat4.create();
-            mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0]); // Move back 6 units
+            mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -20.0]); // Move back 6 units
             // Set up the normal matrix
             const normalMatrix = mat4.create();
             mat4.invert(normalMatrix, modelViewMatrix);
@@ -2555,6 +2639,16 @@ var _11dotjs;
             this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
             this.gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
             this.gl.uniformMatrix4fv(uNormalMatrix, false, normalMatrix);
+        }
+        configureLighting(program) {
+            const lightDirection = vec3.fromValues(-0.5, -0.5, -0.5);
+            vec3.normalize(lightDirection, lightDirection);
+            const uLightDirection = this.gl.getUniformLocation(program, 'u_lightDirection');
+            const uLightColor = this.gl.getUniformLocation(program, 'u_lightColor');
+            const uAmbientColor = this.gl.getUniformLocation(program, 'u_ambientColor');
+            this.gl.uniform3fv(uLightDirection, lightDirection);
+            this.gl.uniform4f(uLightColor, 1.0, 1.0, 1.0, 1.0); // White light
+            this.gl.uniform4f(uAmbientColor, 0.2, 0.2, 0.2, 1.0); // Ambient light
         }
         // Main function
         // 2024-07-06 - I am not too clever. This demo renders only blackness. I
@@ -3005,9 +3099,9 @@ var _11dotjs;
                 _11dotjs.DocComposer.compose({
                     "audio": {
                         "controls": true,
-                        "src": 'http://www.elisokal.com/audio/GOE/2024-08-15.mp3',
+                        "src": 'http://www.elisokal.com/audio/GOE/2024-08-24.mp3',
                         "loop": 1,
-                        "style": "width:100%",
+                        "style": "width:50%; transform: scale(2.0); transform-origin: 0 0",
                     }
                 }, document.body);
             }
@@ -3017,9 +3111,12 @@ var _11dotjs;
                         "controls": true,
                         "src": 'http://www.elisokal.com/audio/Desert%20Dwellers/DJmixes/Live%20at%203hr%20Rocky%20Mountain%20Set%202020.mp3',
                         "loop": 1,
-                        "style": "width:100%",
+                        "style": "width:50%; transform: scale(2.0); transform-origin: 0 0",
                     }
                 }, document.body);
+            }
+            else if (ch == 'test') {
+                _11dotjs.DocComposer.testToJsml();
             }
         }
         static renderMainIndicators(channel, instanceCount) {

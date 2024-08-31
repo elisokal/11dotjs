@@ -121,8 +121,8 @@ namespace _11dotjs {
         }
 
         private sphereVertexList( origin: VisPoint, radius: number ): number[] {
-            const slices: number = 16;//this.getSlices();
-            const rings: number = 16;//this.getRings();
+            const slices: number = 8;//this.getSlices();
+            const rings: number = 8;//this.getRings();
             const PI: number = <number>Math.PI;
             let rho: number;
             let drho: number;
@@ -224,7 +224,7 @@ namespace _11dotjs {
                 const stride = 0;         // how many bytes to get from one set of values to the next
                                         // 0 = use type and numComponents above
                 const offset = 0;         // how many bytes inside the buffer to start from
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+                gl.bindBuffer( gl.ARRAY_BUFFER, buffers.position );
                 gl.vertexAttribPointer(
                     programInfo.attribLocations.vertexPosition,
                     numComponents,
@@ -237,15 +237,18 @@ namespace _11dotjs {
             }
 
             // Tell WebGL to use our program when drawing
-            gl.useProgram(programInfo.program);
+            gl.useProgram( programInfo.program );
             this.configureViewVolume( programInfo.program );
+            this.configureLighting( programInfo.program );
 
             // Set the shader uniforms
 
             {
                 const offset = 0;
                 const vertexCount = this.positions.length / 3;
+                // Break here to see output?!
                 gl.drawArrays( gl.TRIANGLES, offset, vertexCount );
+                let stop = 1;
             }
         }
 
@@ -257,26 +260,39 @@ namespace _11dotjs {
             const zNear = 0.1;
             const zFar = 100.0;
             const projectionMatrix = mat4.create();
-            mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+            mat4.perspective( projectionMatrix, fieldOfView, aspect, zNear, zFar );
 
             // Set up the model view matrix (camera position)
             const modelViewMatrix = mat4.create();
-            mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0]);  // Move back 6 units
+            mat4.translate( modelViewMatrix, modelViewMatrix, [ 0.0, 0.0, -20.0 ] );  // Move back 6 units
 
             // Set up the normal matrix
             const normalMatrix = mat4.create();
-            mat4.invert(normalMatrix, modelViewMatrix);
-            mat4.transpose(normalMatrix, normalMatrix);
+            mat4.invert( normalMatrix, modelViewMatrix );
+            mat4.transpose( normalMatrix, normalMatrix );
 
             // Pass matrices to the shader
-            const uProjectionMatrix = this.gl.getUniformLocation(program, 'u_projectionMatrix');
-            const uModelViewMatrix = this.gl.getUniformLocation(program, 'u_modelViewMatrix');
-            const uNormalMatrix = this.gl.getUniformLocation(program, 'u_normalMatrix');
+            const uProjectionMatrix = this.gl.getUniformLocation( program, 'u_projectionMatrix' );
+            const uModelViewMatrix = this.gl.getUniformLocation( program, 'u_modelViewMatrix' );
+            const uNormalMatrix = this.gl.getUniformLocation( program, 'u_normalMatrix' );
 
-            this.gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
-            this.gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
-            this.gl.uniformMatrix4fv(uNormalMatrix, false, normalMatrix);
+            this.gl.uniformMatrix4fv( uProjectionMatrix, false, projectionMatrix );
+            this.gl.uniformMatrix4fv( uModelViewMatrix, false, modelViewMatrix );
+            this.gl.uniformMatrix4fv( uNormalMatrix, false, normalMatrix );
 
+        }
+
+        private configureLighting( program ) {
+            const lightDirection = vec3.fromValues(-0.5, -0.5, -0.5);
+            vec3.normalize( lightDirection, lightDirection );
+
+            const uLightDirection = this.gl.getUniformLocation(program, 'u_lightDirection');
+            const uLightColor = this.gl.getUniformLocation(program, 'u_lightColor');
+            const uAmbientColor = this.gl.getUniformLocation(program, 'u_ambientColor');
+
+            this.gl.uniform3fv( uLightDirection, lightDirection );
+            this.gl.uniform4f( uLightColor, 1.0, 1.0, 1.0, 1.0 );  // White light
+            this.gl.uniform4f( uAmbientColor, 0.2, 0.2, 0.2, 1.0 );  // Ambient light
         }
 
         // Main function
