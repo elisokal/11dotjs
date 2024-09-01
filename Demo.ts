@@ -473,7 +473,8 @@ namespace _11dotjs {
                     document.body
                 );
             } else if ( ch == 'test' ) {
-                DocComposer.testToJsml();
+                DocComposer.testToJsml2();
+                //DocComposer.testRef();
             }
         }
 

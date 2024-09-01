@@ -1079,13 +1079,13 @@ var _11dotjs;
             } while (node);
             return ret;
         }
-        static htmlToJsml(html) {
+        static htmlBodyToJsml(html) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            const ret = DocComposer.docToJsml(doc);
+            const ret = DocComposer.docToJsml(doc.body);
             return ret;
         }
-        static docToJsml(node, ui, history, arrayTagName, arrayParent) {
+        static docToJsml(node, ui, history, array) {
             let ret = null;
             if (node) {
                 if (!ui) {
@@ -1102,26 +1102,28 @@ var _11dotjs;
                 else {
                     history.set(node, null);
                 }
-                let tagName = node.tagName.toLowerCase();
+                let tagName = DocComposer.tagName(node);
                 //console.log( tagName );
-                let uiNext = {};
-                // Copy attributes
-                let el = node;
-                for (const attrName of el.getAttributeNames()) {
-                    let val = el.getAttribute(attrName);
-                    uiNext[attrName] = val;
+                let uiNext = DocComposer.newJsmlNode(node);
+                let newArray = null;
+                if (Array.isArray(uiNext)) {
+                    newArray = uiNext;
+                    if (newArray != null && array != null) {
+                        let error = 1;
+                    }
+                    array = newArray;
+                    uiNext = newArray[0];
                 }
-                // Add Object or array? It depends on the nextSibling node
-                if (node.nextSibling) {
-                    let nextTagName = node.nextSibling.tagName.toLowerCase();
-                    if (false && nextTagName == tagName && !Array.isArray(ui)) {
-                        // Now the tip is an array!
-                        uiNext = [];
-                        arrayTagName = tagName;
-                        arrayParent = ui;
+                // Copy attributes
+                if (node instanceof Element) {
+                    let el = node;
+                    for (const attrName of el.getAttributeNames()) {
+                        let val = el.getAttribute(attrName);
+                        uiNext[attrName] = val;
                     }
                 }
-                if (!Array.isArray(ui)) {
+                if (array == null) {
+                    // Force tag name to be unique
                     let counter = 2;
                     let tn2 = tagName;
                     while (ui[tn2]) {
@@ -1131,20 +1133,59 @@ var _11dotjs;
                     ui[tagName] = uiNext;
                 }
                 else {
-                    let tmp = {};
-                    tmp[tagName] = uiNext;
-                    ui.push(tmp);
+                    if (newArray != null) {
+                        ui[tagName] = newArray;
+                    }
+                    else {
+                        array.push(uiNext);
+                    }
                 }
                 var children = node.childNodes;
                 if (children) {
                     for (let i = 0; i < children.length; i++) {
-                        DocComposer.docToJsml(children[i], uiNext, history, arrayTagName, arrayParent);
+                        DocComposer.docToJsml(children[i], uiNext, history, null);
                     }
                 }
                 // Now the siblings.
-                DocComposer.docToJsml(node.nextSibling, ui, history, arrayTagName, arrayParent);
+                DocComposer.docToJsml(node.nextSibling, ui, history, array);
             }
             return ret;
+        }
+        static newJsmlNode(node) {
+            let ret = {};
+            let startArray = DocComposer.sameTag(node, node.nextSibling) && !DocComposer.sameTag(node, node.previousSibling);
+            if (startArray) {
+                ret = [{}];
+            }
+            return ret;
+        }
+        static sameTag(node1, node2) {
+            if ((node1 == null) != (node2 == null)) {
+                return false;
+            }
+            else if (node1 == null) {
+                return false;
+            }
+            else {
+                return node1.tagName == node2.tagName;
+            }
+        }
+        static tagName(node) {
+            if (node) {
+                let el = node;
+                if (!el.tagName) {
+                    switch (node.nodeType) {
+                        case Node.DOCUMENT_NODE:
+                            return 'document';
+                        case Node.TEXT_NODE:
+                            return 'text';
+                    }
+                }
+                else {
+                    return el.tagName.toLowerCase();
+                }
+            }
+            return null;
         }
         static testToJsml() {
             let ui = _11dotjs.Tables.demoUi(2, 3, "testToJsml");
@@ -1154,6 +1195,44 @@ var _11dotjs;
             console.log(JSON.stringify(ui2, null, 4));
             DocComposer.compose(ui2, document.body);
             let stop = 1;
+        }
+        static testToJsml2() {
+            //let doc = DocComposer.fetchFromUrl( 'http://www.nytimes.com' );
+            let ui = DocComposer.htmlBodyToJsml(`<body><span>span 1</span><span>span 2</span><br/><span>span 3</span></body>`);
+            console.log(JSON.stringify(ui, null, 4));
+            DocComposer.compose(ui, document.body);
+            let stop = 1;
+        }
+        static testRef() {
+            let o1 = {};
+            let o2 = { "ref01": null };
+            o2.ref01 = o1;
+            let test = o2.ref01 == o1;
+            let stop = true;
+        }
+        static fetchFromUrl(url) {
+            let ret = null;
+            DocComposer.fetchDocumentUsingFetch(url).then((doc) => { ret = doc; });
+            return ret;
+        }
+        // Function to fetch and read a document using Fetch API
+        static async fetchDocumentUsingFetch(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html'); // Parse as HTML Document
+                console.log('Document fetched successfully:', doc);
+                // Return the parsed document
+                return doc;
+            }
+            catch (error) {
+                console.error('Failed to fetch the document:', error);
+                return null; // Return null in case of error
+            }
         }
     }
     DocComposer.dbgRet = null;
@@ -3116,7 +3195,8 @@ var _11dotjs;
                 }, document.body);
             }
             else if (ch == 'test') {
-                _11dotjs.DocComposer.testToJsml();
+                _11dotjs.DocComposer.testToJsml2();
+                //DocComposer.testRef();
             }
         }
         static renderMainIndicators(channel, instanceCount) {
